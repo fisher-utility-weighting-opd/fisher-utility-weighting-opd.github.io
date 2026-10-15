@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Fisher Utility Weighting (FUW): token utility for on-policy distillation, derived from local trust-region optimization. Explore the method and published math results.">
     <meta name="theme-color" content="#ffffff">
-    <meta property="og:title" content="Fisher Utility Weighting — Token Utility for On-Policy Distillation">
+    <meta property="og:title" content="Token Utility for On-Policy Distillation via Local Trust-Region Optimization">
     <meta property="og:description" content="Which tokens offer the most useful supervision? A local optimization view of token importance, with results across three Qwen3 student–teacher pairs.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://fisher-utility-weighting-opd.github.io/">
@@ -14,14 +14,13 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="site.js" defer></script>
-    <title>Fisher Utility Weighting — Token Utility for On-Policy Distillation</title>
+    <title>Token Utility for On-Policy Distillation via Local Trust-Region Optimization</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <main id="main">
       <section class="hero wrap" id="top" aria-labelledby="title">
-        <h1 id="title">Fisher Utility Weighting</h1>
-        <p class="paper-title">Token Utility for On-Policy Distillation<br>via Local Trust-Region Optimization</p>
+        <h1 id="title">Token Utility for On-Policy Distillation via Local Trust-Region Optimization</h1>
         <p class="authors">
           <span><a href="https://www.amazon.science/author/narayanan-sadagopan" target="_blank" rel="noopener noreferrer">Narayanan Sadagopan</a><sup>1,*</sup></span>
           <span><a href="https://yilanchen6.github.io/" target="_blank" rel="noopener noreferrer">Yilan Chen</a><sup>2,†</sup></span>
@@ -45,29 +44,47 @@
 
       <section class="method-section section wrap" id="method" aria-labelledby="method-title">
         <div class="section-heading">
-          <h2 id="method-title">Which tokens offer the most useful supervision?</h2>
-          <p>Give every student-visited position the same local budget for changing its next-token distribution. The resulting optimization problem defines each token’s utility.</p>
+          <h2 id="method-title">How Fisher Utility Weighting works</h2>
+          <p>The student learns from teacher predictions on its own responses. Standard OPD gives every visited position the same weight. FUW gives greater weight to positions with more local opportunity to reduce the distillation loss.</p>
         </div>
+        <ol class="method-flow" aria-label="FUW training flow">
+          <li><strong>Generate responses</strong><p>Collect the prefixes visited by the student and evaluate both models’ next-token distributions.</p></li>
+          <li><strong>Measure utility</strong><p>Score the local learning opportunity using the distillation objective and the student’s Fisher geometry.</p></li>
+          <li><strong>Form weights</strong><p>Take square roots of the scores and normalize over the batch so the average weight is one.</p></li>
+          <li><strong>Update the student</strong><p>Scale each position’s distillation loss by its weight and update the student with the weighted objective.</p></li>
+        </ol>
+        <h3>What does token utility measure?</h3>
+        <p>Allow the same infinitesimal change in the student’s predictive distribution at every position. A higher utility means a larger attainable first-order reduction in distillation loss under that common KL budget.</p>
         <div class="equation-line">
           <span class="equation-label">Token utility</span>
           <math display="block" aria-label="s sub t equals g sub t transpose F sub t pseudoinverse g sub t"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msubsup><mi>g</mi><mi>t</mi><mo>⊤</mo></msubsup><msubsup><mi>F</mi><mi>t</mi><mo>†</mo></msubsup><msub><mi>g</mi><mi>t</mi></msub></mrow></math>
           <span class="equation-label">Local improvement</span>
           <math display="block" aria-label="Delta star sub t equals square root of 2 epsilon s sub t"><mrow><msubsup><mi>Δ</mi><mi>t</mi><mo>⋆</mo></msubsup><mo>=</mo><msqrt><mrow><mn>2</mn><mi>ε</mi><msub><mi>s</mi><mi>t</mi></msub></mrow></msqrt></mrow></math>
         </div>
-        <p>Here, <span class="inline-math">g<sub>t</sub></span> is the distillation loss gradient with respect to student logits, and <span class="inline-math">F<sub>t</sub></span> is the student’s categorical Fisher matrix. The choice of distillation objective determines the resulting utility.</p>
+        <p>Here, <span class="inline-math">g<sub>t</sub></span> is the loss gradient with respect to student logits and <span class="inline-math">F<sub>t</sub></span> is the categorical Fisher matrix. The square root of the utility follows the local improvement scale. The chosen loss gives a closed-form score that can be computed directly from the two next-token distributions:</p>
         <div class="equation-line">
           <span class="equation-label">Reverse KL</span>
           <math display="block" aria-label="Utility is the student-weighted variance of the student-to-teacher log probability ratio"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msub><mi mathvariant="normal">Var</mi><msub><mi>p</mi><mi>S</mi></msub></msub><mo>[</mo><mi mathvariant="normal">log</mi><mfrac><msub><mi>p</mi><mi>S</mi></msub><msub><mi>p</mi><mi>T</mi></msub></mfrac><mo>]</mo></mrow></math>
           <span class="equation-label">Forward KL</span>
           <math display="block" aria-label="Utility is Pearson chi squared divergence of teacher from student"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msup><mi>χ</mi><mn>2</mn></msup><mo>(</mo><msub><mi>p</mi><mi>T</mi></msub><mo>∥</mo><msub><mi>p</mi><mi>S</mi></msub><mo>)</mo></mrow></math>
         </div>
-        <h3>From utility to Fisher Utility Weighting</h3>
-        <ol class="method-steps">
-          <li><strong>Score each position.</strong> For reverse-KL training, take the union of the student’s and teacher’s top 16 tokens, renormalize on this set of at most 32 tokens, clip log ratios to [−5, 5], and compute their student-weighted variance.</li>
-          <li><strong>Turn scores into weights.</strong> Take the square root of each score and normalize the weights to have batch mean one. Use uniform weights if all scores are zero.</li>
-          <li><strong>Weight the distillation loss.</strong> Multiply each position’s loss by its weight and stop gradients through the weights during the student update.</li>
-        </ol>
-        <p class="theory-note">The trust region derives the local utility. Practical FUW uses the clipped candidate-set approximation as a weighting rule. The theory compares predictive distributions at fixed prefixes; the experiments test the signal under shared model parameters.</p>
+        <h3>From a score to a training weight</h3>
+        <p>FUW takes the square root of each practical utility score, then divides by the batch mean of those square roots. This gives more influence to positions with greater local learning opportunity.</p>
+        <div class="weight-example" role="group" aria-labelledby="weight-example-title">
+          <h4 id="weight-example-title">An illustrative three-position batch</h4>
+          <table class="example-table">
+            <caption>Illustrative values. The square roots have mean 2; dividing by 2 gives weights with mean one.</caption>
+            <thead><tr><th scope="col">Position</th><th scope="col">Utility</th><th scope="col">Square root</th><th scope="col">Weight</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">1</th><td>1</td><td>1</td><td>0.5×</td></tr>
+              <tr><th scope="row">2</th><td>4</td><td>2</td><td>1.0×</td></tr>
+              <tr><th scope="row">3</th><td>9</td><td>3</td><td>1.5×</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The third position receives three times the weight of the first. The weights stay nonnegative and are held fixed while differentiating the weighted loss.</p>
+        <details class="implementation-details"><summary>How the scores are computed in training</summary><div><p>For reverse KL, use the union of the student’s and teacher’s top 16 tokens, containing at most 32 tokens. Renormalize both distributions on that set, clip their log ratios to [−5, 5], and compute the student-weighted variance. These approximate scores supply the square-root weights.</p><p>If every score is zero, use uniform weights. Stop gradients through the weights when optimizing the student. Forward KL uses its corresponding Pearson χ<sup>2</sup> utility and upper-clips the teacher-to-student log ratio at 3 for scoring.</p></div></details>
+        <p class="theory-note">The trust region defines the local utility; training applies the resulting weights in ordinary OPD updates. The theory compares predictive distributions at fixed prefixes, and the paper evaluates the weighting rule under shared model parameters.</p>
       </section>
 
       <section class="results-section section wrap" id="results" aria-labelledby="results-title">

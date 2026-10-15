@@ -28,7 +28,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, .table-scroll:focu
 .skip-link:focus { top: 12px; color: white; }
 .hero { padding-block: 48px 32px; text-align: center; }
 .hero h1 { max-width: 1000px; margin: 0 auto; font-size: 48px; font-weight: 650; line-height: 1.15; letter-spacing: -.025em; }
-.paper-title { max-width: 940px; margin: 15px auto 0; color: var(--muted); font-size: 24px; font-weight: 400; line-height: 1.4; letter-spacing: -.012em; }
 .authors { display: flex; flex-wrap: wrap; justify-content: center; column-gap: 14px; row-gap: 5px; max-width: 1040px; margin: 23px auto 8px; font-size: 20px; font-weight: 500; }
 .authors > span { white-space: nowrap; }
 .authors a { color: #245e9b; }
@@ -52,16 +51,25 @@ a:focus-visible, button:focus-visible, summary:focus-visible, .table-scroll:focu
 .method-section, .results-section, .citation-section { border-top: 1px solid var(--line); }
 .method-section > p { color: var(--muted); }
 .inline-math { white-space: nowrap; font-family: "Cambria Math", Georgia, serif; }
-.equation-line { margin-block: 26px; padding-block: 15px; overflow-x: auto; color: var(--ink); font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 25px; line-height: 1.8; text-align: center; }
+.equation-line { display: grid; grid-template-columns: max-content max-content; justify-content: center; align-items: center; gap: 14px 20px; margin-block: 26px; padding-block: 10px; overflow-x: auto; color: var(--ink); font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 25px; line-height: 1.8; }
 .equation-line sub, .equation-line sup { font-size: .65em; }
-.equation-line math { max-width: 100%; font-size: 1em; }
-.equation-line .equation-label { margin-left: 12px; color: var(--muted); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 14px; }
-.method-steps { list-style: none; counter-reset: method; margin: 28px 0 0; padding: 0; }
-.method-steps li { position: relative; counter-increment: method; padding-left: 43px; }
-.method-steps li + li { margin-top: 22px; }
-.method-steps li::before { content: counter(method, decimal-leading-zero); position: absolute; top: 2px; left: 0; color: var(--accent); font-size: 14px; font-weight: 700; }
-.method-steps h3 { margin: 0 0 4px; font-size: 19px; font-weight: 650; line-height: 1.4; }
-.method-steps p { margin: 0; color: var(--muted); font-size: 17px; }
+.equation-line math { max-width: none; font-size: 1em; }
+.equation-line .equation-label { color: var(--muted); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 14px; text-align: right; white-space: nowrap; }
+.method-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; list-style: none; counter-reset: method; margin: 30px 0 38px; padding: 0; }
+.method-flow li { counter-increment: method; padding-top: 12px; border-top: 2px solid var(--line); }
+.method-flow li::before { content: counter(method, decimal-leading-zero); display: block; margin-bottom: 5px; color: var(--accent); font-size: 13px; font-weight: 700; }
+.method-flow strong { font-size: 17px; font-weight: 650; }
+.method-flow p { margin: 6px 0 0; color: var(--muted); font-size: 15px; line-height: 1.65; }
+.method-section > h3 { margin: 30px 0 10px; font-size: 24px; font-weight: 650; line-height: 1.35; }
+.weight-example { max-width: 680px; margin: 24px auto; }
+.weight-example h4 { margin: 0 0 12px; font-size: 17px; font-weight: 600; }
+.example-table { width: 100%; border-collapse: collapse; text-align: right; font-size: 17px; font-variant-numeric: tabular-nums; }
+.example-table th, .example-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.example-table th:first-child { text-align: left; }
+.example-table thead th { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; font-weight: 500; }
+.example-table tbody th { font-weight: 500; }
+.example-table td:last-child { color: var(--accent); font-weight: 650; }
+.example-table caption { caption-side: bottom; padding-top: 10px; color: var(--muted); font-size: 14px; line-height: 1.6; text-align: left; }
 .theory-note { margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 16px; }
 .theory-note strong { color: var(--ink); font-weight: 650; }
 .utility-visual { margin: 28px auto; }
@@ -94,10 +102,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible, .table-scroll:focu
 .results-table .fuw-row .aggregate-col { background: #e4edef; }
 .table-note { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
 .table-note strong { color: var(--ink); font-weight: 650; }
-.evaluation-details { margin-top: 29px; border-block: 1px solid var(--line); font-size: 16px; }
-.evaluation-details summary { padding: 15px 0; cursor: pointer; font-weight: 600; }
-.evaluation-details > div { padding: 0 0 14px; color: var(--muted); }
-.evaluation-details p { margin: 9px 0; }
+.evaluation-details, .implementation-details { margin-top: 29px; border-block: 1px solid var(--line); font-size: 16px; }
+.evaluation-details summary, .implementation-details summary { padding: 15px 0; cursor: pointer; font-weight: 600; }
+.evaluation-details > div, .implementation-details > div { padding: 0 0 14px; color: var(--muted); }
+.evaluation-details p, .implementation-details p { margin: 9px 0; }
 .agreement-section { border-top: 1px solid var(--line); }
 .paper-figure { margin: 30px 0 0; }
 .paper-figure img, .paper-figure svg { display: block; width: 100%; height: auto; background: white; }
@@ -123,7 +131,6 @@ figcaption strong { color: var(--ink); font-weight: 650; }
   .section { padding-block: 36px; }
   .hero { padding-block: 36px 24px; }
   .hero h1 { font-size: 30px; }
-  .paper-title { margin-top: 12px; font-size: 21px; }
   .authors { column-gap: 13px; margin-top: 20px; font-size: 18px; }
   .affiliations { column-gap: 12px; font-size: 16px; }
   .author-note { font-size: 13px; }
@@ -133,10 +140,16 @@ figcaption strong { color: var(--ink); font-weight: 650; }
   .section-heading { margin-bottom: 22px; }
   .section-heading h2, .abstract-section h2 { font-size: 26px; }
   .section-heading > p:last-child { font-size: 17px; }
-  .equation-line { font-size: 21px; }
-  .method-steps li { padding-left: 36px; }
-  .method-steps h3 { font-size: 18px; }
-  .method-steps p { font-size: 17px; }
+  .equation-line { gap: 12px; font-size: 21px; }
+  .equation-line .equation-label { font-size: 13px; }
+  .method-flow { grid-template-columns: 1fr; gap: 16px; margin-bottom: 30px; }
+  .method-flow li { padding-top: 9px; }
+  .method-flow li::before { display: inline-block; margin: 0 10px 0 0; }
+  .method-flow p { margin-left: 29px; font-size: 16px; }
+  .method-section > h3 { font-size: 21px; }
+  .example-table { font-size: 16px; }
+  .example-table th, .example-table td { padding: 9px 6px; }
+  .example-table thead th { font-size: 13px; }
   .theory-note { font-size: 15px; }
   .result-panel + .result-panel { margin-top: 32px; padding-top: 28px; }
   .result-intro h3 { font-size: 24px; }

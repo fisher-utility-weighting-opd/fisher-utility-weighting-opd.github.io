@@ -66,6 +66,13 @@ identical weight vectors across criteria.
 
 ## Method scope
 
+The header uses the full paper title. The method explanation follows the flow
+from student responses to local utility, normalized weights, and weighted OPD.
+An explicitly illustrative three-position example shows utilities 1, 4, 9
+becoming square roots 1, 2, 3 and mean-one weights 0.5, 1, 1.5. These numbers
+explain the weighting operation and are separate from the experimental tables.
+Detailed score computation appears in an expandable section.
+
 The local trust-region problem derives an objective-specific utility. Its
 full-vocabulary theory is distinct from practical training: reverse-KL FUW uses
 the renormalized union of student/teacher top-16 supports, clipped log ratios,

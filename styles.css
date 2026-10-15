@@ -55,6 +55,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible, .table-scroll:focu
 .equation-line sub, .equation-line sup { font-size: .65em; }
 .equation-line math { max-width: none; font-size: 1em; }
 .equation-line .equation-label { color: var(--muted); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 14px; text-align: right; white-space: nowrap; }
+.optimization-objective { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px 28px; margin-block: 26px; padding-block: 10px; color: var(--ink); font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 25px; line-height: 1.8; }
+.optimization-objective math { max-width: none; font-size: 1em; }
+.optimization-constraint { display: flex; align-items: center; gap: 16px; }
+.optimization-constraint > span { color: var(--muted); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 14px; white-space: nowrap; }
 .method-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; list-style: none; counter-reset: method; margin: 30px 0 38px; padding: 0; }
 .method-flow li { counter-increment: method; padding-top: 12px; border-top: 2px solid var(--line); }
 .method-flow li::before { content: counter(method, decimal-leading-zero); display: block; margin-bottom: 5px; color: var(--accent); font-size: 13px; font-weight: 700; }
@@ -133,6 +137,9 @@ figcaption strong { color: var(--ink); font-weight: 650; }
   .section-heading > p:last-child { font-size: 17px; }
   .equation-line { gap: 12px; font-size: 21px; }
   .equation-line .equation-label { font-size: 13px; }
+  .optimization-objective { flex-direction: column; gap: 14px; font-size: 21px; }
+  .optimization-constraint { gap: 12px; }
+  .optimization-constraint > span { font-size: 13px; }
   .method-flow { grid-template-columns: 1fr; gap: 16px; margin-bottom: 30px; }
   .method-flow li { padding-top: 9px; }
   .method-flow li::before { display: inline-block; margin: 0 10px 0 0; }

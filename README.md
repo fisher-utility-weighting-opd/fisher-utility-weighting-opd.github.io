@@ -68,7 +68,8 @@ identical weight vectors across criteria.
 
 The header uses the full paper title. The method explains why disagreement
 alone does not identify local learning opportunities, then defines the
-equal-KL-budget objective and its resulting utility. A four-step flow connects
+equal-KL-budget objective, its local Fisher constraint, and its resulting
+utility. A four-step flow connects
 student responses to local utility, normalized weights, and weighted OPD.
 Detailed score computation appears in an expandable section.
 

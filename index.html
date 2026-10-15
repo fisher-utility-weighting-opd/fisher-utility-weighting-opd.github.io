@@ -51,7 +51,12 @@
         <p>Uniform OPD gives every visited position the same weight. Some student predictions already match the teacher; other disagreements require larger changes in the student’s predictive distribution to resolve. Disagreement alone does not tell us which positions offer the greatest local opportunity to reduce the distillation loss.</p>
         <h3>Objective</h3>
         <p><strong>Which position’s distillation loss can decrease the most under the same small change in the student’s predictive distribution?</strong></p>
-        <p>We compare positions at fixed prefixes using a common infinitesimal KL budget. Under the local Fisher approximation, solving for the largest first-order loss reduction gives the token utility and its corresponding improvement:</p>
+        <p>We compare positions at fixed prefixes using a common infinitesimal KL budget. Under the local Fisher approximation, choose a small change in student logits, <span class="inline-math">δ<sub>t</sub></span>, to maximize the first-order loss reduction:</p>
+        <div class="optimization-objective" role="group" aria-label="Local trust-region optimization objective">
+          <math display="block" aria-label="Maximize over delta sub t the negative inner product of g sub t and delta sub t"><mrow><munder><mo movablelimits="false">max</mo><msub><mi>δ</mi><mi>t</mi></msub></munder><mo>−</mo><msubsup><mi>g</mi><mi>t</mi><mo>⊤</mo></msubsup><msub><mi>δ</mi><mi>t</mi></msub></mrow></math>
+          <div class="optimization-constraint"><span>subject to</span><math display="block" aria-label="One half delta sub t transpose F sub t delta sub t is at most epsilon"><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><msubsup><mi>δ</mi><mi>t</mi><mo>⊤</mo></msubsup><msub><mi>F</mi><mi>t</mi></msub><msub><mi>δ</mi><mi>t</mi></msub><mo>≤</mo><mi>ε</mi></mrow></math></div>
+        </div>
+        <p>This local problem defines the utility comparison; FUW then uses the resulting scores to weight training. Its solution gives the token utility and corresponding local improvement:</p>
         <div class="equation-line">
           <span class="equation-label">Token utility</span>
           <math display="block" aria-label="s sub t equals g sub t transpose F sub t pseudoinverse g sub t"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msubsup><mi>g</mi><mi>t</mi><mo>⊤</mo></msubsup><msubsup><mi>F</mi><mi>t</mi><mo>†</mo></msubsup><msub><mi>g</mi><mi>t</mi></msub></mrow></math>

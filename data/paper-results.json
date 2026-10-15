@@ -1,0 +1,2206 @@
+{
+  "title": "Token Utility for On-Policy Distillation via Local Trust-Region Optimization",
+  "abstract_tex": "Token-selection methods for on-policy distillation (OPD) prioritize student-visited positions using diverse signals, including uncertainty, teacher–student disagreement, and mismatch direction. We instead derive token importance from the distillation objective itself: how much can each position's loss decrease under an equal local KL budget on the student's predictive distribution? The answer is the utility $s_t=g_t^\\top F_t^\\dagger g_t$, where $g_t$ is the logit gradient and $F_t$ is the categorical Fisher matrix. For reverse-KL it equals the student-weighted variance of the student–teacher log-probability ratio, and for forward-KL it equals the Pearson $\\chi^2$ divergence, so the appropriate utility follows from the choice of objective. On shared training checkpoints, several independently motivated criteria, including student entropy, KL disagreement, and TIP, concentrate their importance on nearly the same positions as the derived utility at a 50\\% selection fraction, while diverging at stricter fractions and for direction-specific criteria. We instantiate the utility as Fisher Utility Weighting (FUW), a continuous, mean-normalized token weighting. Across seven mathematical reasoning benchmarks and three Qwen3 student–teacher pairs, FUW improves over matched uniform OPD under both reverse-KL (1.35–4.0 macro points) and forward-KL (1.08–2.71 macro points), and is competitive with existing selective methods using a single closed-form score derived from the training objective.",
+  "abstract_plain": "Token-selection methods for on-policy distillation (OPD) prioritize student-visited positions using diverse signals, including uncertainty, teacher–student disagreement, and mismatch direction. We instead derive token importance from the distillation objective itself: how much can each position’s loss decrease under an equal local KL budget on the student’s predictive distribution? The answer is the utility sₜ = gₜᵀ Fₜ† gₜ, where gₜ is the logit gradient and Fₜ is the categorical Fisher matrix. For reverse-KL it equals the student-weighted variance of the student–teacher log-probability ratio, and for forward-KL it equals the Pearson χ² divergence, so the appropriate utility follows from the choice of objective. On shared training checkpoints, several independently motivated criteria, including student entropy, KL disagreement, and TIP, concentrate their importance on nearly the same positions as the derived utility at a 50% selection fraction, while diverging at stricter fractions and for direction-specific criteria. We instantiate the utility as Fisher Utility Weighting (FUW), a continuous, mean-normalized token weighting. Across seven mathematical reasoning benchmarks and three Qwen3 student–teacher pairs, FUW improves over matched uniform OPD under both reverse-KL (1.35–4.0 macro points) and forward-KL (1.08–2.71 macro points), and is competitive with existing selective methods using a single closed-form score derived from the training objective.",
+  "columns": [
+    "AIME24",
+    "AIME25",
+    "AMC23",
+    "MATH-500",
+    "Minerva",
+    "OlympiadBench",
+    "BRUMO25",
+    "Macro",
+    "Pooled"
+  ],
+  "reverse_kl": [
+    {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-8B",
+      "source_table": 1,
+      "rows": [
+        {
+          "method": "Student (Base)",
+          "reference": true,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "2.3",
+              "se": "1.6",
+              "paper_bold": false,
+              "source_latex": "2.3{\\pm}1.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "0.4",
+              "se": "0.4",
+              "paper_bold": false,
+              "source_latex": "0.4{\\pm}0.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "7.4",
+              "se": "2.1",
+              "paper_bold": false,
+              "source_latex": "7.4{\\pm}2.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "17.5",
+              "se": "1.1",
+              "paper_bold": false,
+              "source_latex": "17.5{\\pm}1.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "4.7",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "4.7{\\pm}0.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "7.6",
+              "se": "0.6",
+              "paper_bold": false,
+              "source_latex": "7.6{\\pm}0.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "2.9",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "2.9{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "6.1",
+              "se": "0.5",
+              "paper_bold": false,
+              "source_latex": "6.1{\\pm}0.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "9.9",
+              "se": "0.5",
+              "paper_bold": false,
+              "source_latex": "9.9{\\pm}0.5",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "Teacher (8B)",
+          "reference": true,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "30.6",
+              "se": "7.4",
+              "paper_bold": false,
+              "source_latex": "30.6{\\pm}7.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "20.6",
+              "se": "7.1",
+              "paper_bold": false,
+              "source_latex": "20.6{\\pm}7.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "62.3",
+              "se": "4.5",
+              "paper_bold": false,
+              "source_latex": "62.3{\\pm}4.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "83.9",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "83.9{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "28.4",
+              "se": "2.5",
+              "paper_bold": false,
+              "source_latex": "28.4{\\pm}2.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "47.7",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "47.7{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "25.8",
+              "se": "7.3",
+              "paper_bold": false,
+              "source_latex": "25.8{\\pm}7.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "42.8",
+              "se": "1.9",
+              "paper_bold": false,
+              "source_latex": "42.8{\\pm}1.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "55.1",
+              "se": "1.1",
+              "paper_bold": false,
+              "source_latex": "55.1{\\pm}1.1",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "OPD",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "8.8",
+              "se": "4.4",
+              "paper_bold": false,
+              "source_latex": "8.8{\\pm}4.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "5.4",
+              "se": "3.2",
+              "paper_bold": false,
+              "source_latex": "5.4{\\pm}3.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "32.0",
+              "se": "3.9",
+              "paper_bold": false,
+              "source_latex": "32.0{\\pm}3.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "61.6",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "61.6{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "16.8",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "16.8{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "25.6",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "25.6{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "9.4",
+              "se": "4.8",
+              "paper_bold": false,
+              "source_latex": "9.4{\\pm}4.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "22.8",
+              "se": "1.2",
+              "paper_bold": false,
+              "source_latex": "22.8{\\pm}1.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "34.5",
+              "se": "1.0",
+              "paper_bold": false,
+              "source_latex": "34.5{\\pm}1.0",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "TIDE",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "11.0",
+              "se": "4.5",
+              "paper_bold": false,
+              "source_latex": "11.0{\\pm}4.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "2.3",
+              "se": "1.5",
+              "paper_bold": false,
+              "source_latex": "2.3{\\pm}1.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "33.9",
+              "se": "3.9",
+              "paper_bold": false,
+              "source_latex": "33.9{\\pm}3.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "62.7",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "62.7{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "16.5",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "16.5{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "25.9",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "25.9{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "8.3",
+              "se": "4.4",
+              "paper_bold": false,
+              "source_latex": "8.3{\\pm}4.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "22.9",
+              "se": "1.1",
+              "paper_bold": false,
+              "source_latex": "22.9{\\pm}1.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "35.0",
+              "se": "1.0",
+              "paper_bold": false,
+              "source_latex": "35.0{\\pm}1.0",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "TIP (Soft-OR, 50%)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "10.6",
+              "se": "4.8",
+              "paper_bold": false,
+              "source_latex": "10.6{\\pm}4.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "5.0",
+              "se": "3.4",
+              "paper_bold": false,
+              "source_latex": "5.0{\\pm}3.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "34.9",
+              "se": "4.3",
+              "paper_bold": false,
+              "source_latex": "34.9{\\pm}4.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "66.9",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "66.9{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "19.5",
+              "se": "2.0",
+              "paper_bold": false,
+              "source_latex": "19.5{\\pm}2.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "29.2",
+              "se": "1.5",
+              "paper_bold": false,
+              "source_latex": "29.2{\\pm}1.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "11.0",
+              "se": "5.3",
+              "paper_bold": false,
+              "source_latex": "11.0{\\pm}5.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "25.3",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "25.3{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "38.4",
+              "se": "1.0",
+              "paper_bold": false,
+              "source_latex": "38.4{\\pm}1.0",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "FUW (Ours)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "12.7",
+              "se": "4.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}12.7{\\pm}4.9}}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "8.5",
+              "se": "4.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}8.5{\\pm}4.1}}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "37.0",
+              "se": "4.4",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}37.0{\\pm}4.4}}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "67.5",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "{\\color[rgb]{0.0938,0.4492,0.332}67.5{\\pm}1.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "20.3",
+              "se": "2.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}20.3{\\pm}2.1}}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "29.7",
+              "se": "1.5",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}29.7{\\pm}1.5}}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "11.9",
+              "se": "5.1",
+              "paper_bold": false,
+              "source_latex": "{\\color[rgb]{0.0938,0.4492,0.332}11.9{\\pm}5.1}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "26.8",
+              "se": "1.4",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}26.8{\\pm}1.4}}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "39.2",
+              "se": "1.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{{\\color[rgb]{0.0938,0.4492,0.332}39.2{\\pm}1.1}}",
+              "best_trained": true
+            }
+          ]
+        }
+      ],
+      "uncertainty_kind": "Reported evaluation-bootstrap uncertainty; reverse table captions do not explicitly name standard error."
+    },
+    {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-14B",
+      "source_table": 3,
+      "rows": [
+        {
+          "method": "Student (Qwen3-1.7B-Base)",
+          "reference": true,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "2.3",
+              "se": "1.6",
+              "paper_bold": false,
+              "source_latex": "2.3{\\pm}1.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "0.4",
+              "se": "0.4",
+              "paper_bold": false,
+              "source_latex": "0.4{\\pm}0.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "7.4",
+              "se": "2.1",
+              "paper_bold": false,
+              "source_latex": "7.4{\\pm}2.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "17.5",
+              "se": "1.1",
+              "paper_bold": false,
+              "source_latex": "17.5{\\pm}1.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "4.7",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "4.7{\\pm}0.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "7.6",
+              "se": "0.6",
+              "paper_bold": false,
+              "source_latex": "7.6{\\pm}0.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "2.9",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "2.9{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "6.1",
+              "se": "0.5",
+              "paper_bold": false,
+              "source_latex": "6.1{\\pm}0.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "9.9",
+              "se": "0.5",
+              "paper_bold": false,
+              "source_latex": "9.9{\\pm}0.5",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "Teacher (Qwen3-14B)",
+          "reference": true,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "31.2",
+              "se": "7.2",
+              "paper_bold": false,
+              "source_latex": "31.2{\\pm}7.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "28.1",
+              "se": "7.6",
+              "paper_bold": false,
+              "source_latex": "28.1{\\pm}7.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "63.6",
+              "se": "4.4",
+              "paper_bold": false,
+              "source_latex": "63.6{\\pm}4.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "86.2",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "86.2{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "32.7",
+              "se": "2.7",
+              "paper_bold": false,
+              "source_latex": "32.7{\\pm}2.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "51.7",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "51.7{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "35.0",
+              "se": "7.9",
+              "paper_bold": false,
+              "source_latex": "35.0{\\pm}7.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "46.9",
+              "se": "2.0",
+              "paper_bold": false,
+              "source_latex": "46.9{\\pm}2.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "58.6",
+              "se": "1.0",
+              "paper_bold": false,
+              "source_latex": "58.6{\\pm}1.0",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "OPD",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "10.6",
+              "se": "4.7",
+              "paper_bold": false,
+              "source_latex": "10.6{\\pm}4.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "7.3",
+              "se": "3.8",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{7.3{\\pm}3.8}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "31.6",
+              "se": "3.9",
+              "paper_bold": false,
+              "source_latex": "31.6{\\pm}3.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "62.2",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "62.2{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "18.7",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "18.7{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "26.4",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "26.4{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "10.2",
+              "se": "4.9",
+              "paper_bold": false,
+              "source_latex": "10.2{\\pm}4.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "23.9",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "23.9{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "35.5",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "35.5{\\pm}0.9",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "TIDE",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "10.0",
+              "se": "4.8",
+              "paper_bold": false,
+              "source_latex": "10.0{\\pm}4.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "5.0",
+              "se": "3.4",
+              "paper_bold": false,
+              "source_latex": "5.0{\\pm}3.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "34.4",
+              "se": "4.1",
+              "paper_bold": false,
+              "source_latex": "34.4{\\pm}4.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "65.6",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "65.6{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "18.8",
+              "se": "1.9",
+              "paper_bold": false,
+              "source_latex": "18.8{\\pm}1.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "28.3",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "28.3{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "9.4",
+              "se": "4.4",
+              "paper_bold": false,
+              "source_latex": "9.4{\\pm}4.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "24.5",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "24.5{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "37.4",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "37.4{\\pm}0.9",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "TIP",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "10.4",
+              "se": "4.8",
+              "paper_bold": false,
+              "source_latex": "10.4{\\pm}4.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "6.7",
+              "se": "3.2",
+              "paper_bold": false,
+              "source_latex": "6.7{\\pm}3.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "34.1",
+              "se": "4.2",
+              "paper_bold": false,
+              "source_latex": "34.1{\\pm}4.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "66.6",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "66.6{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "20.1",
+              "se": "2.0",
+              "paper_bold": false,
+              "source_latex": "20.1{\\pm}2.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "29.3",
+              "se": "1.5",
+              "paper_bold": false,
+              "source_latex": "29.3{\\pm}1.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "15.6",
+              "se": "6.2",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{15.6{\\pm}6.2}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "26.1",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "26.1{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "38.5",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "38.5{\\pm}0.9",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "FUW (Ours)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "11.9",
+              "se": "5.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{11.9{\\pm}5.1}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "7.1",
+              "se": "3.9",
+              "paper_bold": false,
+              "source_latex": "7.1{\\pm}3.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "36.3",
+              "se": "4.3",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{36.3{\\pm}4.3}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "69.4",
+              "se": "1.7",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{69.4{\\pm}1.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "22.2",
+              "se": "2.0",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{22.2{\\pm}2.0}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "30.2",
+              "se": "1.5",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{30.2{\\pm}1.5}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "11.9",
+              "se": "4.7",
+              "paper_bold": false,
+              "source_latex": "11.9{\\pm}4.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "27.0",
+              "se": "1.3",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{27.0{\\pm}1.3}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "40.2",
+              "se": "0.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{40.2{\\pm}0.9}",
+              "best_trained": true
+            }
+          ]
+        }
+      ],
+      "uncertainty_kind": "Reported evaluation-bootstrap uncertainty; reverse table captions do not explicitly name standard error."
+    },
+    {
+      "student": "Qwen3-4B-Base",
+      "teacher": "Qwen3-30B-A3B-Instruct-2507",
+      "source_table": 2,
+      "rows": [
+        {
+          "method": "Student 4B-Base",
+          "reference": true,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "4.4",
+              "se": "2.6",
+              "paper_bold": false,
+              "source_latex": "4.4{\\pm}2.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "0.0",
+              "se": "0.0",
+              "paper_bold": false,
+              "source_latex": "0.0{\\pm}0.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "17.4",
+              "se": "3.2",
+              "paper_bold": false,
+              "source_latex": "17.4{\\pm}3.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "21.1",
+              "se": "1.0",
+              "paper_bold": false,
+              "source_latex": "21.1{\\pm}1.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "5.8",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "5.8{\\pm}0.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "15.1",
+              "se": "0.9",
+              "paper_bold": false,
+              "source_latex": "15.1{\\pm}0.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "8.8",
+              "se": "3.6",
+              "paper_bold": false,
+              "source_latex": "8.8{\\pm}3.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "10.4",
+              "se": "0.8",
+              "paper_bold": false,
+              "source_latex": "10.4{\\pm}0.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "14.9",
+              "se": "0.6",
+              "paper_bold": false,
+              "source_latex": "14.9{\\pm}0.6",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "Teacher 30B-A3B",
+          "reference": true,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "75.2",
+              "se": "6.7",
+              "paper_bold": false,
+              "source_latex": "75.2{\\pm}6.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "65.4",
+              "se": "7.4",
+              "paper_bold": false,
+              "source_latex": "65.4{\\pm}7.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "91.6",
+              "se": "2.7",
+              "paper_bold": false,
+              "source_latex": "91.6{\\pm}2.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "95.8",
+              "se": "0.8",
+              "paper_bold": false,
+              "source_latex": "95.8{\\pm}0.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "35.2",
+              "se": "2.7",
+              "paper_bold": false,
+              "source_latex": "35.2{\\pm}2.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "67.6",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "67.6{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "66.0",
+              "se": "6.6",
+              "paper_bold": false,
+              "source_latex": "66.0{\\pm}6.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "71.0",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "71.0{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "72.2",
+              "se": "1.0",
+              "paper_bold": false,
+              "source_latex": "72.2{\\pm}1.0",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "OPD",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "29.8",
+              "se": "7.5",
+              "paper_bold": false,
+              "source_latex": "29.8{\\pm}7.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "28.7",
+              "se": "7.6",
+              "paper_bold": false,
+              "source_latex": "28.7{\\pm}7.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "60.5",
+              "se": "4.7",
+              "paper_bold": false,
+              "source_latex": "60.5{\\pm}4.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "84.4",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "84.4{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "33.3",
+              "se": "2.5",
+              "paper_bold": false,
+              "source_latex": "33.3{\\pm}2.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "47.6",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "47.6{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "29.6",
+              "se": "7.4",
+              "paper_bold": false,
+              "source_latex": "29.6{\\pm}7.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "44.8",
+              "se": "2.0",
+              "paper_bold": false,
+              "source_latex": "44.8{\\pm}2.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "56.2",
+              "se": "1.1",
+              "paper_bold": false,
+              "source_latex": "56.2{\\pm}1.1",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "TIDE",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "31.5",
+              "se": "8.0",
+              "paper_bold": false,
+              "source_latex": "31.5{\\pm}8.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "25.8",
+              "se": "7.5",
+              "paper_bold": false,
+              "source_latex": "25.8{\\pm}7.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "59.0",
+              "se": "4.8",
+              "paper_bold": false,
+              "source_latex": "59.0{\\pm}4.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "86.6",
+              "se": "1.3",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{86.6{\\pm}1.3}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "33.2",
+              "se": "2.5",
+              "paper_bold": false,
+              "source_latex": "33.2{\\pm}2.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "50.3",
+              "se": "1.7",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{50.3{\\pm}1.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "38.8",
+              "se": "7.4",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{38.8{\\pm}7.4}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "46.4",
+              "se": "2.0",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{46.4{\\pm}2.0}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "58.0",
+              "se": "1.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{58.0{\\pm}1.1}",
+              "best_trained": true
+            }
+          ]
+        },
+        {
+          "method": "TIP",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "32.3",
+              "se": "7.7",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{32.3{\\pm}7.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "23.5",
+              "se": "7.2",
+              "paper_bold": false,
+              "source_latex": "23.5{\\pm}7.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "61.9",
+              "se": "4.6",
+              "paper_bold": false,
+              "source_latex": "61.9{\\pm}4.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "85.2",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "85.2{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "32.3",
+              "se": "2.6",
+              "paper_bold": false,
+              "source_latex": "32.3{\\pm}2.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "47.3",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "47.3{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "36.5",
+              "se": "7.4",
+              "paper_bold": false,
+              "source_latex": "36.5{\\pm}7.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "45.6",
+              "se": "2.0",
+              "paper_bold": false,
+              "source_latex": "45.6{\\pm}2.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "56.3",
+              "se": "1.1",
+              "paper_bold": false,
+              "source_latex": "56.3{\\pm}1.1",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "FUW (Ours)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "26.7",
+              "se": "7.2",
+              "paper_bold": false,
+              "source_latex": "26.7{\\pm}7.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "32.3",
+              "se": "7.6",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{32.3{\\pm}7.6}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "63.4",
+              "se": "4.5",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{63.4{\\pm}4.5}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "85.6",
+              "se": "1.4",
+              "paper_bold": false,
+              "source_latex": "85.6{\\pm}1.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "33.8",
+              "se": "2.6",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{33.8{\\pm}2.6}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "49.2",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "49.2{\\pm}1.8",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "32.1",
+              "se": "7.5",
+              "paper_bold": false,
+              "source_latex": "32.1{\\pm}7.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "46.15",
+              "se": "1.98",
+              "paper_bold": false,
+              "source_latex": "46.15{\\pm}1.98",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "57.54",
+              "se": "1.01",
+              "paper_bold": false,
+              "source_latex": "57.54{\\pm}1.01",
+              "best_trained": false
+            }
+          ]
+        }
+      ],
+      "uncertainty_kind": "Reported evaluation-bootstrap uncertainty; reverse table captions do not explicitly name standard error."
+    }
+  ],
+  "forward_kl": [
+    {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-8B",
+      "source_table": 7,
+      "rows": [
+        {
+          "method": "FKL (Uniform)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "4.6",
+              "se": "3.2",
+              "paper_bold": false,
+              "source_latex": "4.6{\\pm}3.2",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "2.1",
+              "se": "1.5",
+              "paper_bold": false,
+              "source_latex": "2.1{\\pm}1.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "25.7",
+              "se": "3.7",
+              "paper_bold": false,
+              "source_latex": "25.7{\\pm}3.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "56.9",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "56.9{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "19.4",
+              "se": "1.9",
+              "paper_bold": false,
+              "source_latex": "19.4{\\pm}1.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "22.4",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "22.4{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "9.4",
+              "se": "3.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{9.4{\\pm}3.1}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "20.07",
+              "se": "0.94",
+              "paper_bold": false,
+              "source_latex": "20.07{\\pm}0.94",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "31.78",
+              "se": "0.83",
+              "paper_bold": false,
+              "source_latex": "31.78{\\pm}0.83",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "FKL + Utility (Ours)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "12.1",
+              "se": "4.5",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{12.1{\\pm}4.5}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "4.4",
+              "se": "3.0",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{4.4{\\pm}3.0}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "28.3",
+              "se": "4.0",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{28.3{\\pm}4.0}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "63.6",
+              "se": "1.8",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{63.6{\\pm}1.8}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "20.4",
+              "se": "2.1",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{20.4{\\pm}2.1}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "24.7",
+              "se": "1.3",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{24.7{\\pm}1.3}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "6.0",
+              "se": "3.0",
+              "paper_bold": false,
+              "source_latex": "6.0{\\pm}3.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "22.78",
+              "se": "1.14",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{22.78{\\pm}1.14}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "35.21",
+              "se": "0.89",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{35.21{\\pm}0.89}",
+              "best_trained": true
+            }
+          ]
+        }
+      ],
+      "uncertainty_kind": "Standard error, explicitly stated in Table7 caption."
+    },
+    {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-14B",
+      "source_table": 7,
+      "rows": [
+        {
+          "method": "FKL (Uniform)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "3.8",
+              "se": "1.6",
+              "paper_bold": false,
+              "source_latex": "3.8{\\pm}1.6",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "0.5",
+              "se": "0.3",
+              "paper_bold": false,
+              "source_latex": "0.5{\\pm}0.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "29.4",
+              "se": "3.8",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{29.4{\\pm}3.8}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "57.7",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "57.7{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "20.0",
+              "se": "1.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{20.0{\\pm}1.9}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "22.4",
+              "se": "1.3",
+              "paper_bold": false,
+              "source_latex": "22.4{\\pm}1.3",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "9.6",
+              "se": "3.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{9.6{\\pm}3.9}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "20.46",
+              "se": "0.91",
+              "paper_bold": false,
+              "source_latex": "20.46{\\pm}0.91",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "32.23",
+              "se": "0.84",
+              "paper_bold": false,
+              "source_latex": "32.23{\\pm}0.84",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "FKL + Utility (Ours)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "6.9",
+              "se": "3.7",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{6.9{\\pm}3.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "2.7",
+              "se": "1.7",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{2.7{\\pm}1.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "27.8",
+              "se": "3.9",
+              "paper_bold": false,
+              "source_latex": "27.8{\\pm}3.9",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "63.0",
+              "se": "1.7",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{63.0{\\pm}1.7}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "19.1",
+              "se": "2.0",
+              "paper_bold": false,
+              "source_latex": "19.1{\\pm}2.0",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "24.0",
+              "se": "1.3",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{24.0{\\pm}1.3}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "7.3",
+              "se": "3.5",
+              "paper_bold": false,
+              "source_latex": "7.3{\\pm}3.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "21.54",
+              "se": "1.02",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{21.54{\\pm}1.02}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "34.41",
+              "se": "0.86",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{34.41{\\pm}0.86}",
+              "best_trained": true
+            }
+          ]
+        }
+      ],
+      "uncertainty_kind": "Standard error, explicitly stated in Table7 caption."
+    },
+    {
+      "student": "Qwen3-4B-Base",
+      "teacher": "Qwen3-30B-A3B-Instruct-2507",
+      "source_table": 7,
+      "rows": [
+        {
+          "method": "FKL (Uniform)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "24.0",
+              "se": "5.3",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{24.0{\\pm}5.3}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "21.0",
+              "se": "5.7",
+              "paper_bold": false,
+              "source_latex": "21.0{\\pm}5.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "60.1",
+              "se": "5.2",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{60.1{\\pm}5.2}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "84.0",
+              "se": "1.5",
+              "paper_bold": false,
+              "source_latex": "84.0{\\pm}1.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "32.0",
+              "se": "2.7",
+              "paper_bold": false,
+              "source_latex": "32.0{\\pm}2.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "48.5",
+              "se": "1.8",
+              "paper_bold": false,
+              "source_latex": "48.5{\\pm}1.8",
+              "best_trained": true
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "24.8",
+              "se": "7.4",
+              "paper_bold": false,
+              "source_latex": "24.8{\\pm}7.4",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "42.04",
+              "se": "1.7",
+              "paper_bold": false,
+              "source_latex": "42.04{\\pm}1.7",
+              "best_trained": false
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "55.85",
+              "se": "1.2",
+              "paper_bold": false,
+              "source_latex": "55.85{\\pm}1.2",
+              "best_trained": false
+            }
+          ]
+        },
+        {
+          "method": "FKL + Utility (Ours)",
+          "reference": false,
+          "scores": [
+            {
+              "benchmark": "AIME24",
+              "mean": "22.9",
+              "se": "5.5",
+              "paper_bold": false,
+              "source_latex": "22.9{\\pm}5.5",
+              "best_trained": false
+            },
+            {
+              "benchmark": "AIME25",
+              "mean": "22.9",
+              "se": "5.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{22.9{\\pm}5.9}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "AMC23",
+              "mean": "57.0",
+              "se": "5.1",
+              "paper_bold": false,
+              "source_latex": "57.0{\\pm}5.1",
+              "best_trained": false
+            },
+            {
+              "benchmark": "MATH-500",
+              "mean": "85.5",
+              "se": "1.6",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{85.5{\\pm}1.6}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Minerva",
+              "mean": "32.7",
+              "se": "2.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{32.7{\\pm}2.9}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "OlympiadBench",
+              "mean": "47.6",
+              "se": "1.9",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{47.6{\\pm}1.9}",
+              "best_trained": false
+            },
+            {
+              "benchmark": "BRUMO25",
+              "mean": "33.5",
+              "se": "7.2",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{33.5{\\pm}7.2}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Macro",
+              "mean": "43.2",
+              "se": "1.8",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{43.2{\\pm}1.8}",
+              "best_trained": true
+            },
+            {
+              "benchmark": "Pooled",
+              "mean": "56.1",
+              "se": "1.2",
+              "paper_bold": true,
+              "source_latex": "\\mathbf{56.1{\\pm}1.2}",
+              "best_trained": true
+            }
+          ]
+        }
+      ],
+      "uncertainty_kind": "Standard error, explicitly stated in Table7 caption."
+    }
+  ],
+  "published_bold_discrepancies": [
+    {
+      "objective": "reverse_kl",
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-8B",
+      "method": "FUW (Ours)",
+      "benchmark": "MATH-500",
+      "mean": "67.5",
+      "se": "1.7",
+      "paper_bold": false,
+      "source_latex": "{\\color[rgb]{0.0938,0.4492,0.332}67.5{\\pm}1.7}",
+      "best_trained": true
+    },
+    {
+      "objective": "reverse_kl",
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-8B",
+      "method": "FUW (Ours)",
+      "benchmark": "BRUMO25",
+      "mean": "11.9",
+      "se": "5.1",
+      "paper_bold": false,
+      "source_latex": "{\\color[rgb]{0.0938,0.4492,0.332}11.9{\\pm}5.1}",
+      "best_trained": true
+    },
+    {
+      "objective": "forward_kl",
+      "student": "Qwen3-4B-Base",
+      "teacher": "Qwen3-30B-A3B-Instruct-2507",
+      "method": "FKL (Uniform)",
+      "benchmark": "OlympiadBench",
+      "mean": "48.5",
+      "se": "1.8",
+      "paper_bold": false,
+      "source_latex": "48.5{\\pm}1.8",
+      "best_trained": true
+    },
+    {
+      "objective": "forward_kl",
+      "student": "Qwen3-4B-Base",
+      "teacher": "Qwen3-30B-A3B-Instruct-2507",
+      "method": "FKL + Utility (Ours)",
+      "benchmark": "OlympiadBench",
+      "mean": "47.6",
+      "se": "1.9",
+      "paper_bold": true,
+      "source_latex": "\\mathbf{47.6{\\pm}1.9}",
+      "best_trained": false
+    }
+  ],
+  "paper": {
+    "arxiv_id": "2610.18883",
+    "version": "v1",
+    "abstract_url": "https://arxiv.org/abs/2610.18883",
+    "pdf_url": "https://arxiv.org/pdf/2610.18883v1",
+    "html_url": "https://arxiv.org/html/2610.18883v1",
+    "source_url": "https://arxiv.org/src/2610.18883v1",
+    "submitted_utc": "2026-10-01T20:01:20Z",
+    "public_comment": "10 pages, Accepted to Pre-to-Post workshop at NeurIPS 2026",
+    "source_package_sha256": "9fb0bf06c2fc37f5376464d39a897fa738b2938ed853e9707755b44c30c14c64"
+  },
+  "authors": [
+    {
+      "name": "Narayanan Sadagopan",
+      "affiliations": [
+        1
+      ],
+      "footnote": "Corresponding author."
+    },
+    {
+      "name": "Yilan Chen",
+      "affiliations": [
+        2
+      ],
+      "footnote": "Work done during an internship at AWS AI Labs."
+    },
+    {
+      "name": "Vijay Lingam",
+      "affiliations": [
+        1
+      ]
+    }
+  ],
+  "affiliations": {
+    "1": "AWS AI Labs",
+    "2": "UC San Diego"
+  },
+  "formulas": {
+    "utility": "s_t=g_t^\\top F_t^\\dagger g_t",
+    "maximum_local_improvement": "\\Delta_t^\\star=\\sqrt{2\\varepsilon s_t}",
+    "reverse_kl_utility": "s_t=\\operatorname{Var}_{v\\sim p_{S,t}}[\\log(p_{S,t}(v)/p_{T,t}(v))]",
+    "forward_kl_utility": "s_t=\\chi^2(p_{T,t}\\|p_{S,t})",
+    "practical_support": "\\mathcal C_t=\\operatorname{Top}_{16}(p_{S,t})\\cup\\operatorname{Top}_{16}(p_{T,t}),\\quad|\\mathcal C_t|\\leq32",
+    "weights": "u_t=\\sqrt{\\widehat s_t},\\quad w_t=Nu_t/\\sum_j u_j",
+    "all_zero_fallback": "w_t=1\\text{ if }\\sum_j u_j=0",
+    "loss": "\\mathcal L_{\\mathrm{FUW}}=N^{-1}\\sum_t\\operatorname{stopgrad}(w_t)\\widehat L_t"
+  },
+  "protocol": {
+    "training": {
+      "dataset": "DAPO-Math-17k",
+      "steps": 279,
+      "epochs": 1,
+      "sequences_per_step": 256,
+      "maximum_context_tokens": 8192,
+      "maximum_prompt_tokens": 1024,
+      "maximum_response_tokens": 7168
+    },
+    "evaluation": {
+      "total_problems": 1620,
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "benchmarks": [
+        {
+          "name": "AIME24",
+          "problems": 30,
+          "responses_per_problem": 16
+        },
+        {
+          "name": "AIME25",
+          "problems": 30,
+          "responses_per_problem": 16
+        },
+        {
+          "name": "AMC23",
+          "problems": 83,
+          "responses_per_problem": 16
+        },
+        {
+          "name": "MATH-500",
+          "problems": 500,
+          "responses_per_problem": 8
+        },
+        {
+          "name": "Minerva",
+          "problems": 272,
+          "responses_per_problem": 8
+        },
+        {
+          "name": "OlympiadBench",
+          "problems": 675,
+          "responses_per_problem": 8
+        },
+        {
+          "name": "BRUMO25",
+          "problems": 30,
+          "responses_per_problem": 16
+        }
+      ],
+      "macro": "Equal mean over seven benchmark accuracies.",
+      "pooled": "Equal mean over all 1620 problem accuracies, regardless of sampled-response count.",
+      "uncertainty": "Each configuration is trained once; uncertainty reflects paired bootstrap resampling over evaluation problems. Aggregate uncertainty and paired contrasts use 20000 paired bootstrap resamples.",
+      "source_precision_note": "Reverse-KL table headings say Avg@8 although the four smaller benchmarks use 16 responses and the larger three use eight. Forward-KL Table 7 uses Avg@k and explicitly identifies ± values as standard error."
+    },
+    "matching": "Uniform OPD, FUW, and TIP use the same union-top-16 candidate support and restricted renormalized loss. TIDE uses its native support.",
+    "reverse_clipping": 5,
+    "forward_log_ratio_upper_clip": 3,
+    "detached_weights": true
+  },
+  "headline_gains": [
+    {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-8B",
+      "reverse_macro_pp": "4.0",
+      "reverse_pooled_pp_published_prose": "4.6",
+      "forward_macro_pp": "2.71",
+      "forward_pooled_pp": "3.43"
+    },
+    {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-14B",
+      "reverse_macro_pp": "3.1",
+      "reverse_pooled_pp_published_prose": "4.7",
+      "forward_macro_pp": "1.08",
+      "forward_pooled_pp": "2.18"
+    },
+    {
+      "student": "Qwen3-4B-Base",
+      "teacher": "Qwen3-30B-A3B-Instruct-2507",
+      "reverse_macro_pp": "1.35",
+      "reverse_pooled_pp_published_prose": "1.34",
+      "forward_macro_pp": "1.16",
+      "forward_pooled_pp": "0.25"
+    }
+  ],
+  "claims": [
+    "An equal infinitesimal KL budget induces a Fisher-geometry token utility directly from the distillation objective.",
+    "Reverse-KL utility is the student-weighted variance of the student–teacher log-probability ratio; forward-KL utility is Pearson χ²(pT || pS).",
+    "FUW improves macro and pooled accuracy over matched uniform OPD across all three evaluated model pairs under both objectives.",
+    "FUW has the highest aggregate trained-student point estimates for the two 1.7B pairs; TIDE has slightly higher aggregate estimates for the 4B pair.",
+    "At 50% selection, several criteria have near-complete effective-support agreement along the uniformly trained 1.7B ← 14B trajectory, while TIDE-excess stays distinct.",
+    "Permuting FUW weights lowers pooled accuracy by 1.02 percentage points (paired p = 0.028), supporting position-specific utility information."
+  ],
+  "caveats": [
+    "The KL trust region derives the score and is not imposed as a constraint during training.",
+    "The theory concerns independent local predictive distributions, not globally optimal shared-transformer parameter updates.",
+    "The training score uses clipped, renormalized restricted support; it approximates full-vocabulary utility.",
+    "Effective-support agreement does not imply identical rankings, selected sets, or weight vectors; agreement at 20% is criterion- and checkpoint-dependent.",
+    "FUW versus TIP pooled difference for the 1.7B ← 8B pair has a paired-bootstrap 95% CI including zero.",
+    "Euclidean utility has comparable downstream accuracy (p = 0.527); FUW versus hard top-half weighting is not significant (p = 0.087).",
+    "Each configuration is trained once; uncertainty is evaluation-bootstrap uncertainty, not independent training-seed variation."
+  ],
+  "controls": {
+    "source_table": 6,
+    "pair": {
+      "student": "Qwen3-1.7B-Base",
+      "teacher": "Qwen3-8B"
+    },
+    "rows": [
+      {
+        "method": "FUW",
+        "pooled": "39.17",
+        "delta_vs_fuw": null,
+        "ci95": null,
+        "p": null
+      },
+      {
+        "method": "Euclidean utility",
+        "pooled": "38.9",
+        "delta_vs_fuw": "-0.27",
+        "ci95": [
+          "-1.09",
+          "0.56"
+        ],
+        "p": "0.527"
+      },
+      {
+        "method": "Permuted FUW",
+        "pooled": "38.15",
+        "delta_vs_fuw": "-1.02",
+        "ci95": [
+          "-1.92",
+          "-0.11"
+        ],
+        "p": "0.028"
+      },
+      {
+        "method": "Hard top-half FUW",
+        "pooled": "38.41",
+        "delta_vs_fuw": "-0.76",
+        "ci95": [
+          "-1.62",
+          "0.11"
+        ],
+        "p": "0.087"
+      }
+    ],
+    "interpretation": "Negative paired differences favor FUW. Exact controls precision is retained; do not replace the main-table FUW39.2 by39.17."
+  },
+  "provenance_notes": [
+    "All numerical strings and paper_bold flags extracted from the downloaded published v1 HTML math alttext. best_trained marks are recomputed from displayed point estimates, excluding Student/Teacher references, per user request.",
+    "Source reverse tables are Tables1,3,2 in website pair order (1.7B←8B,1.7B←14B,4B←30B-A3B). Forward results are Table7.",
+    "The main prose reports pooled reverse gain4.6 for1.7B←8B, whereas subtracting the printed rounded table point estimates39.2−34.5 gives4.7. Preserve the published prose gain separately; do not conflate it with a difference recomputed from rounded means."
+  ],
+  "website": "https://fisher-utility-weighting-opd.github.io/",
+  "website_assets": [
+    {
+      "path": "assets/cross-pair-gains.png",
+      "source": "figures/fuw_cross_pair_gains.pdf",
+      "use": "Social preview image; rasterized at 180 DPI."
+    },
+    {
+      "path": "assets/criterion-agreement.png",
+      "source": "figures/criterion_equivalence_ovl_x1_pair.png",
+      "use": "Original Figure 2; copied without modification."
+    }
+  ]
+}

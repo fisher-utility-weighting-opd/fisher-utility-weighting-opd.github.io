@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Fisher Utility Weighting (FUW): token utility for on-policy distillation, derived from local trust-region optimization. Explore the method and published math results.">
+    <meta name="theme-color" content="#ffffff">
+    <meta property="og:title" content="Fisher Utility Weighting — Token Utility for On-Policy Distillation">
+    <meta property="og:description" content="Which tokens offer the most useful supervision? A local optimization view of token importance, with results across three Qwen3 student–teacher pairs.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fisher-utility-weighting-opd.github.io/">
+    <meta property="og:image" content="https://fisher-utility-weighting-opd.github.io/assets/cross-pair-gains.png">
+    <link rel="canonical" href="https://fisher-utility-weighting-opd.github.io/">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script src="site.js" defer></script>
+    <title>Fisher Utility Weighting — Token Utility for On-Policy Distillation</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main">
+      <section class="hero wrap" id="top" aria-labelledby="title">
+        <h1 id="title">Fisher Utility Weighting</h1>
+        <p class="paper-title">Token Utility for On-Policy Distillation<br>via Local Trust-Region Optimization</p>
+        <p class="authors">
+          <span><a href="https://www.amazon.science/author/narayanan-sadagopan" target="_blank" rel="noopener noreferrer">Narayanan Sadagopan</a><sup>1,*</sup></span>
+          <span><a href="https://yilanchen6.github.io/" target="_blank" rel="noopener noreferrer">Yilan Chen</a><sup>2,†</sup></span>
+          <span><a href="https://scholar.google.com/citations?user=FPOCruQAAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer">Vijay Lingam</a><sup>1</sup></span>
+        </p>
+        <p class="affiliations"><span><sup>1</sup> AWS AI Labs</span><span><sup>2</sup> UC San Diego</span></p>
+        <p class="author-note">* Corresponding author. &nbsp; † Work done during an internship at AWS AI Labs.</p>
+        <div class="resource-links" aria-label="Research resources">
+          <a class="resource-link" href="https://arxiv.org/pdf/2610.18883" target="_blank" rel="noopener noreferrer">Paper PDF</a>
+          <a class="resource-link" href="https://arxiv.org/abs/2610.18883" target="_blank" rel="noopener noreferrer">arXiv</a>
+          <button class="resource-link" type="button" disabled>Code (coming soon)</button>
+          <a class="resource-link" href="#results">Results</a>
+          <a class="resource-link" href="#citation">BibTeX</a>
+        </div>
+      </section>
+
+      <section class="abstract-section section reading-width" id="abstract" aria-labelledby="abstract-title">
+        <h2 id="abstract-title">Abstract</h2>
+        <p>Token-selection methods for on-policy distillation (OPD) prioritize student-visited positions using diverse signals, including uncertainty, teacher–student disagreement, and mismatch direction. We instead derive token importance from the distillation objective itself: how much can each position’s loss decrease under an equal local KL budget on the student’s predictive distribution? The answer is the utility <span class="inline-math">s<sub>t</sub> = g<sub>t</sub><sup>⊤</sup> F<sub>t</sub><sup>†</sup> g<sub>t</sub></span>, where <span class="inline-math">g<sub>t</sub></span> is the logit gradient and <span class="inline-math">F<sub>t</sub></span> is the categorical Fisher matrix. For reverse-KL it equals the student-weighted variance of the student–teacher log-probability ratio, and for forward-KL it equals the Pearson χ<sup>2</sup> divergence, so the appropriate utility follows from the choice of objective. On shared training checkpoints, several independently motivated criteria, including student entropy, KL disagreement, and TIP, concentrate their importance on nearly the same positions as the derived utility at a 50% selection fraction, while diverging at stricter fractions and for direction-specific criteria. We instantiate the utility as Fisher Utility Weighting (FUW), a continuous, mean-normalized token weighting. Across seven mathematical reasoning benchmarks and three Qwen3 student–teacher pairs, FUW improves over matched uniform OPD under both reverse-KL (1.35–4.0 macro points) and forward-KL (1.08–2.71 macro points), and is competitive with existing selective methods using a single closed-form score derived from the training objective.</p>
+      </section>
+
+      <section class="method-section section wrap" id="method" aria-labelledby="method-title">
+        <div class="section-heading">
+          <h2 id="method-title">Which tokens offer the most useful supervision?</h2>
+          <p>Give every student-visited position the same local budget for changing its next-token distribution. The resulting optimization problem defines each token’s utility.</p>
+        </div>
+        <div class="equation-line">
+          <span class="equation-label">Token utility</span>
+          <math display="block" aria-label="s sub t equals g sub t transpose F sub t pseudoinverse g sub t"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msubsup><mi>g</mi><mi>t</mi><mo>⊤</mo></msubsup><msubsup><mi>F</mi><mi>t</mi><mo>†</mo></msubsup><msub><mi>g</mi><mi>t</mi></msub></mrow></math>
+          <span class="equation-label">Local improvement</span>
+          <math display="block" aria-label="Delta star sub t equals square root of 2 epsilon s sub t"><mrow><msubsup><mi>Δ</mi><mi>t</mi><mo>⋆</mo></msubsup><mo>=</mo><msqrt><mrow><mn>2</mn><mi>ε</mi><msub><mi>s</mi><mi>t</mi></msub></mrow></msqrt></mrow></math>
+        </div>
+        <p>Here, <span class="inline-math">g<sub>t</sub></span> is the distillation loss gradient with respect to student logits, and <span class="inline-math">F<sub>t</sub></span> is the student’s categorical Fisher matrix. The choice of distillation objective determines the resulting utility.</p>
+        <div class="equation-line">
+          <span class="equation-label">Reverse KL</span>
+          <math display="block" aria-label="Utility is the student-weighted variance of the student-to-teacher log probability ratio"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msub><mi mathvariant="normal">Var</mi><msub><mi>p</mi><mi>S</mi></msub></msub><mo>[</mo><mi mathvariant="normal">log</mi><mfrac><msub><mi>p</mi><mi>S</mi></msub><msub><mi>p</mi><mi>T</mi></msub></mfrac><mo>]</mo></mrow></math>
+          <span class="equation-label">Forward KL</span>
+          <math display="block" aria-label="Utility is Pearson chi squared divergence of teacher from student"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msup><mi>χ</mi><mn>2</mn></msup><mo>(</mo><msub><mi>p</mi><mi>T</mi></msub><mo>∥</mo><msub><mi>p</mi><mi>S</mi></msub><mo>)</mo></mrow></math>
+        </div>
+        <h3>From utility to Fisher Utility Weighting</h3>
+        <ol class="method-steps">
+          <li><strong>Score each position.</strong> For reverse-KL training, take the union of the student’s and teacher’s top 16 tokens, renormalize on this set of at most 32 tokens, clip log ratios to [−5, 5], and compute their student-weighted variance.</li>
+          <li><strong>Turn scores into weights.</strong> Take the square root of each score and normalize the weights to have batch mean one. Use uniform weights if all scores are zero.</li>
+          <li><strong>Weight the distillation loss.</strong> Multiply each position’s loss by its weight and stop gradients through the weights during the student update.</li>
+        </ol>
+        <p class="theory-note">The trust region derives the local utility. Practical FUW uses the clipped candidate-set approximation as a weighting rule. The theory compares predictive distributions at fixed prefixes; the experiments test the signal under shared model parameters.</p>
+      </section>
+
+      <section class="results-section section wrap" id="results" aria-labelledby="results-title">
+        <div class="section-heading">
+          <h2 id="results-title">Results</h2>
+          <p>Seven mathematical reasoning benchmarks, 1,620 problems, and three Qwen3 student–teacher pairs. Each training run uses 279 steps with 256 sequences per step.</p>
+        </div>
+        <article class="result-panel" id="reverse-kl-results" aria-labelledby="reverse-title">
+          <div class="result-intro"><h3 id="reverse-title">Reverse-KL distillation</h3><p>FUW improves the macro average over matched uniform OPD across all three model pairs.</p></div>
+          <div class="table-scroll" tabindex="0" aria-describedby="reverse-table-note" role="region" aria-label="Complete reverse-KL mathematical reasoning results">
+            <table class="results-table math-table reverse-table" id="reverse-kl-table">
+              <caption class="visually-hidden">Complete reverse-KL math accuracy results</caption>
+              <colgroup><col class="method-column"><col span="7"><col class="aggregate-column"><col class="aggregate-column"></colgroup>
+              <thead>
+                <tr>
+                  <th scope="col" class="method-col">Method</th>
+                  <th scope="col">AIME24</th>
+                  <th scope="col">AIME25</th>
+                  <th scope="col">AMC23</th>
+                  <th scope="col">MATH-500</th>
+                  <th scope="col">Minerva</th>
+                  <th scope="col">Olympiad<wbr>Bench</th>
+                  <th scope="col">BRUMO25</th>
+                  <th scope="col" class="aggregate-col">Macro Avg@k</th>
+                  <th scope="col" class="aggregate-col">Pooled Avg@k</th>
+                </tr>
+              </thead>
+              <tbody aria-labelledby="reverse-pair-1" data-paper-table="1">
+                <tr class="model-group"><th colspan="10" scope="rowgroup" id="reverse-pair-1"><span class="model-name">Qwen3-1.7B-Base ← Qwen3-8B</span></th></tr>
+                <tr class="reference-row">
+                  <th scope="row" class="method-col">Student (Base)</th>
+                  <td><span class="score-mean">2.3</span> <small class="score-std">± 1.6</small></td>
+                  <td><span class="score-mean">0.4</span> <small class="score-std">± 0.4</small></td>
+                  <td><span class="score-mean">7.4</span> <small class="score-std">± 2.1</small></td>
+                  <td><span class="score-mean">17.5</span> <small class="score-std">± 1.1</small></td>
+                  <td><span class="score-mean">4.7</span> <small class="score-std">± 0.9</small></td>
+                  <td><span class="score-mean">7.6</span> <small class="score-std">± 0.6</small></td>
+                  <td><span class="score-mean">2.9</span> <small class="score-std">± 1.8</small></td>
+                  <td class="aggregate-col"><span class="score-mean">6.1</span> <small class="score-std">± 0.5</small></td>
+                  <td class="aggregate-col"><span class="score-mean">9.9</span> <small class="score-std">± 0.5</small></td>
+                </tr>
+                <tr class="reference-row">
+                  <th scope="row" class="method-col">Teacher (8B)</th>
+                  <td><span class="score-mean">30.6</span> <small class="score-std">± 7.4</small></td>
+                  <td><span class="score-mean">20.6</span> <small class="score-std">± 7.1</small></td>
+                  <td><span class="score-mean">62.3</span> <small class="score-std">± 4.5</small></td>
+                  <td><span class="score-mean">83.9</span> <small class="score-std">± 1.4</small></td>
+                  <td><span class="score-mean">28.4</span> <small class="score-std">± 2.5</small></td>
+                  <td><span class="score-mean">47.7</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">25.8</span> <small class="score-std">± 7.3</small></td>
+                  <td class="aggregate-col"><span class="score-mean">42.8</span> <small class="score-std">± 1.9</small></td>
+                  <td class="aggregate-col"><span class="score-mean">55.1</span> <small class="score-std">± 1.1</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">OPD</th>
+                  <td><span class="score-mean">8.8</span> <small class="score-std">± 4.4</small></td>
+                  <td><span class="score-mean">5.4</span> <small class="score-std">± 3.2</small></td>
+                  <td><span class="score-mean">32.0</span> <small class="score-std">± 3.9</small></td>
+                  <td><span class="score-mean">61.6</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">16.8</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">25.6</span> <small class="score-std">± 1.4</small></td>
+                  <td><span class="score-mean">9.4</span> <small class="score-std">± 4.8</small></td>
+                  <td class="aggregate-col"><span class="score-mean">22.8</span> <small class="score-std">± 1.2</small></td>
+                  <td class="aggregate-col"><span class="score-mean">34.5</span> <small class="score-std">± 1.0</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">TIDE</th>
+                  <td><span class="score-mean">11.0</span> <small class="score-std">± 4.5</small></td>
+                  <td><span class="score-mean">2.3</span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean">33.9</span> <small class="score-std">± 3.9</small></td>
+                  <td><span class="score-mean">62.7</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">16.5</span> <small class="score-std">± 1.8</small></td>
+                  <td><span class="score-mean">25.9</span> <small class="score-std">± 1.4</small></td>
+                  <td><span class="score-mean">8.3</span> <small class="score-std">± 4.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">22.9</span> <small class="score-std">± 1.1</small></td>
+                  <td class="aggregate-col"><span class="score-mean">35.0</span> <small class="score-std">± 1.0</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">TIP (Soft-OR, 50%)</th>
+                  <td><span class="score-mean">10.6</span> <small class="score-std">± 4.8</small></td>
+                  <td><span class="score-mean">5.0</span> <small class="score-std">± 3.4</small></td>
+                  <td><span class="score-mean">34.9</span> <small class="score-std">± 4.3</small></td>
+                  <td><span class="score-mean">66.9</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">19.5</span> <small class="score-std">± 2.0</small></td>
+                  <td><span class="score-mean">29.2</span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean">11.0</span> <small class="score-std">± 5.3</small></td>
+                  <td class="aggregate-col"><span class="score-mean">25.3</span> <small class="score-std">± 1.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">38.4</span> <small class="score-std">± 1.0</small></td>
+                </tr>
+                <tr class="fuw-row">
+                  <th scope="row" class="method-col">FUW (Ours)</th>
+                  <td><span class="score-mean"><strong>12.7</strong></span> <small class="score-std">± 4.9</small></td>
+                  <td><span class="score-mean"><strong>8.5</strong></span> <small class="score-std">± 4.1</small></td>
+                  <td><span class="score-mean"><strong>37.0</strong></span> <small class="score-std">± 4.4</small></td>
+                  <td><span class="score-mean"><strong>67.5</strong></span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean"><strong>20.3</strong></span> <small class="score-std">± 2.1</small></td>
+                  <td><span class="score-mean"><strong>29.7</strong></span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean"><strong>11.9</strong></span> <small class="score-std">± 5.1</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>26.8</strong></span> <small class="score-std">± 1.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>39.2</strong></span> <small class="score-std">± 1.1</small></td>
+                </tr>
+              </tbody>
+              <tbody aria-labelledby="reverse-pair-2" data-paper-table="3">
+                <tr class="model-group"><th colspan="10" scope="rowgroup" id="reverse-pair-2"><span class="model-name">Qwen3-1.7B-Base ← Qwen3-14B</span></th></tr>
+                <tr class="reference-row">
+                  <th scope="row" class="method-col">Student (Qwen3-1.7B-Base)</th>
+                  <td><span class="score-mean">2.3</span> <small class="score-std">± 1.6</small></td>
+                  <td><span class="score-mean">0.4</span> <small class="score-std">± 0.4</small></td>
+                  <td><span class="score-mean">7.4</span> <small class="score-std">± 2.1</small></td>
+                  <td><span class="score-mean">17.5</span> <small class="score-std">± 1.1</small></td>
+                  <td><span class="score-mean">4.7</span> <small class="score-std">± 0.9</small></td>
+                  <td><span class="score-mean">7.6</span> <small class="score-std">± 0.6</small></td>
+                  <td><span class="score-mean">2.9</span> <small class="score-std">± 1.8</small></td>
+                  <td class="aggregate-col"><span class="score-mean">6.1</span> <small class="score-std">± 0.5</small></td>
+                  <td class="aggregate-col"><span class="score-mean">9.9</span> <small class="score-std">± 0.5</small></td>
+                </tr>
+                <tr class="reference-row">
+                  <th scope="row" class="method-col">Teacher (Qwen3-14B)</th>
+                  <td><span class="score-mean">31.2</span> <small class="score-std">± 7.2</small></td>
+                  <td><span class="score-mean">28.1</span> <small class="score-std">± 7.6</small></td>
+                  <td><span class="score-mean">63.6</span> <small class="score-std">± 4.4</small></td>
+                  <td><span class="score-mean">86.2</span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean">32.7</span> <small class="score-std">± 2.7</small></td>
+                  <td><span class="score-mean">51.7</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">35.0</span> <small class="score-std">± 7.9</small></td>
+                  <td class="aggregate-col"><span class="score-mean">46.9</span> <small class="score-std">± 2.0</small></td>
+                  <td class="aggregate-col"><span class="score-mean">58.6</span> <small class="score-std">± 1.0</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">OPD</th>
+                  <td><span class="score-mean">10.6</span> <small class="score-std">± 4.7</small></td>
+                  <td><span class="score-mean"><strong>7.3</strong></span> <small class="score-std">± 3.8</small></td>
+                  <td><span class="score-mean">31.6</span> <small class="score-std">± 3.9</small></td>
+                  <td><span class="score-mean">62.2</span> <small class="score-std">± 1.8</small></td>
+                  <td><span class="score-mean">18.7</span> <small class="score-std">± 1.8</small></td>
+                  <td><span class="score-mean">26.4</span> <small class="score-std">± 1.4</small></td>
+                  <td><span class="score-mean">10.2</span> <small class="score-std">± 4.9</small></td>
+                  <td class="aggregate-col"><span class="score-mean">23.9</span> <small class="score-std">± 1.3</small></td>
+                  <td class="aggregate-col"><span class="score-mean">35.5</span> <small class="score-std">± 0.9</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">TIDE</th>
+                  <td><span class="score-mean">10.0</span> <small class="score-std">± 4.8</small></td>
+                  <td><span class="score-mean">5.0</span> <small class="score-std">± 3.4</small></td>
+                  <td><span class="score-mean">34.4</span> <small class="score-std">± 4.1</small></td>
+                  <td><span class="score-mean">65.6</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">18.8</span> <small class="score-std">± 1.9</small></td>
+                  <td><span class="score-mean">28.3</span> <small class="score-std">± 1.4</small></td>
+                  <td><span class="score-mean">9.4</span> <small class="score-std">± 4.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">24.5</span> <small class="score-std">± 1.3</small></td>
+                  <td class="aggregate-col"><span class="score-mean">37.4</span> <small class="score-std">± 0.9</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">TIP</th>
+                  <td><span class="score-mean">10.4</span> <small class="score-std">± 4.8</small></td>
+                  <td><span class="score-mean">6.7</span> <small class="score-std">± 3.2</small></td>
+                  <td><span class="score-mean">34.1</span> <small class="score-std">± 4.2</small></td>
+                  <td><span class="score-mean">66.6</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">20.1</span> <small class="score-std">± 2.0</small></td>
+                  <td><span class="score-mean">29.3</span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean"><strong>15.6</strong></span> <small class="score-std">± 6.2</small></td>
+                  <td class="aggregate-col"><span class="score-mean">26.1</span> <small class="score-std">± 1.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">38.5</span> <small class="score-std">± 0.9</small></td>
+                </tr>
+                <tr class="fuw-row">
+                  <th scope="row" class="method-col">FUW (Ours)</th>
+                  <td><span class="score-mean"><strong>11.9</strong></span> <small class="score-std">± 5.1</small></td>
+                  <td><span class="score-mean">7.1</span> <small class="score-std">± 3.9</small></td>
+                  <td><span class="score-mean"><strong>36.3</strong></span> <small class="score-std">± 4.3</small></td>
+                  <td><span class="score-mean"><strong>69.4</strong></span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean"><strong>22.2</strong></span> <small class="score-std">± 2.0</small></td>
+                  <td><span class="score-mean"><strong>30.2</strong></span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean">11.9</span> <small class="score-std">± 4.7</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>27.0</strong></span> <small class="score-std">± 1.3</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>40.2</strong></span> <small class="score-std">± 0.9</small></td>
+                </tr>
+              </tbody>
+              <tbody aria-labelledby="reverse-pair-3" data-paper-table="2">
+                <tr class="model-group"><th colspan="10" scope="rowgroup" id="reverse-pair-3"><span class="model-name">Qwen3-4B-Base ← Qwen3-30B-A3B-Instruct-2507</span></th></tr>
+                <tr class="reference-row">
+                  <th scope="row" class="method-col">Student 4B-Base</th>
+                  <td><span class="score-mean">4.4</span> <small class="score-std">± 2.6</small></td>
+                  <td><span class="score-mean">0.0</span> <small class="score-std">± 0.0</small></td>
+                  <td><span class="score-mean">17.4</span> <small class="score-std">± 3.2</small></td>
+                  <td><span class="score-mean">21.1</span> <small class="score-std">± 1.0</small></td>
+                  <td><span class="score-mean">5.8</span> <small class="score-std">± 0.9</small></td>
+                  <td><span class="score-mean">15.1</span> <small class="score-std">± 0.9</small></td>
+                  <td><span class="score-mean">8.8</span> <small class="score-std">± 3.6</small></td>
+                  <td class="aggregate-col"><span class="score-mean">10.4</span> <small class="score-std">± 0.8</small></td>
+                  <td class="aggregate-col"><span class="score-mean">14.9</span> <small class="score-std">± 0.6</small></td>
+                </tr>
+                <tr class="reference-row">
+                  <th scope="row" class="method-col">Teacher 30B-A3B</th>
+                  <td><span class="score-mean">75.2</span> <small class="score-std">± 6.7</small></td>
+                  <td><span class="score-mean">65.4</span> <small class="score-std">± 7.4</small></td>
+                  <td><span class="score-mean">91.6</span> <small class="score-std">± 2.7</small></td>
+                  <td><span class="score-mean">95.8</span> <small class="score-std">± 0.8</small></td>
+                  <td><span class="score-mean">35.2</span> <small class="score-std">± 2.7</small></td>
+                  <td><span class="score-mean">67.6</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">66.0</span> <small class="score-std">± 6.6</small></td>
+                  <td class="aggregate-col"><span class="score-mean">71.0</span> <small class="score-std">± 1.8</small></td>
+                  <td class="aggregate-col"><span class="score-mean">72.2</span> <small class="score-std">± 1.0</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">OPD</th>
+                  <td><span class="score-mean">29.8</span> <small class="score-std">± 7.5</small></td>
+                  <td><span class="score-mean">28.7</span> <small class="score-std">± 7.6</small></td>
+                  <td><span class="score-mean">60.5</span> <small class="score-std">± 4.7</small></td>
+                  <td><span class="score-mean">84.4</span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean">33.3</span> <small class="score-std">± 2.5</small></td>
+                  <td><span class="score-mean">47.6</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">29.6</span> <small class="score-std">± 7.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">44.8</span> <small class="score-std">± 2.0</small></td>
+                  <td class="aggregate-col"><span class="score-mean">56.2</span> <small class="score-std">± 1.1</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">TIDE</th>
+                  <td><span class="score-mean">31.5</span> <small class="score-std">± 8.0</small></td>
+                  <td><span class="score-mean">25.8</span> <small class="score-std">± 7.5</small></td>
+                  <td><span class="score-mean">59.0</span> <small class="score-std">± 4.8</small></td>
+                  <td><span class="score-mean"><strong>86.6</strong></span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean">33.2</span> <small class="score-std">± 2.5</small></td>
+                  <td><span class="score-mean"><strong>50.3</strong></span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean"><strong>38.8</strong></span> <small class="score-std">± 7.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>46.4</strong></span> <small class="score-std">± 2.0</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>58.0</strong></span> <small class="score-std">± 1.1</small></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="method-col">TIP</th>
+                  <td><span class="score-mean"><strong>32.3</strong></span> <small class="score-std">± 7.7</small></td>
+                  <td><span class="score-mean">23.5</span> <small class="score-std">± 7.2</small></td>
+                  <td><span class="score-mean">61.9</span> <small class="score-std">± 4.6</small></td>
+                  <td><span class="score-mean">85.2</span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean">32.3</span> <small class="score-std">± 2.6</small></td>
+                  <td><span class="score-mean">47.3</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">36.5</span> <small class="score-std">± 7.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">45.6</span> <small class="score-std">± 2.0</small></td>
+                  <td class="aggregate-col"><span class="score-mean">56.3</span> <small class="score-std">± 1.1</small></td>
+                </tr>
+                <tr class="fuw-row">
+                  <th scope="row" class="method-col">FUW (Ours)</th>
+                  <td><span class="score-mean">26.7</span> <small class="score-std">± 7.2</small></td>
+                  <td><span class="score-mean"><strong>32.3</strong></span> <small class="score-std">± 7.6</small></td>
+                  <td><span class="score-mean"><strong>63.4</strong></span> <small class="score-std">± 4.5</small></td>
+                  <td><span class="score-mean">85.6</span> <small class="score-std">± 1.4</small></td>
+                  <td><span class="score-mean"><strong>33.8</strong></span> <small class="score-std">± 2.6</small></td>
+                  <td><span class="score-mean">49.2</span> <small class="score-std">± 1.8</small></td>
+                  <td><span class="score-mean">32.1</span> <small class="score-std">± 7.5</small></td>
+                  <td class="aggregate-col"><span class="score-mean">46.15</span> <small class="score-std">± 1.98</small></td>
+                  <td class="aggregate-col"><span class="score-mean">57.54</span> <small class="score-std">± 1.01</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note" id="reverse-table-note">Accuracy (%), with the paper’s reported bootstrap uncertainty. Macro gives each benchmark equal weight; pooled gives each problem equal weight. Bold marks the highest trained point estimate in each column. FUW has the highest aggregate estimates for the two 1.7B pairs; TIDE is slightly ahead for the 4B pair.</p>
+        </article>
+        <article class="result-panel" id="forward-kl-results" aria-labelledby="forward-title">
+          <div class="result-intro"><h3 id="forward-title">The framework also applies to forward KL</h3><p>Using the objective-specific Pearson χ<sup>2</sup> utility improves both macro and pooled accuracy over uniform forward-KL distillation for every pair.</p></div>
+          <div class="table-scroll" tabindex="0" aria-describedby="forward-table-note" role="region" aria-label="Complete forward-KL mathematical reasoning results">
+            <table class="results-table forward-table" id="forward-kl-table">
+              <caption class="visually-hidden">Complete forward-KL math accuracy results</caption>
+              <colgroup><col class="method-column"><col span="7"><col class="aggregate-column"><col class="aggregate-column"></colgroup>
+              <thead>
+                <tr>
+                  <th scope="col" class="method-col">Method</th>
+                  <th scope="col">AIME24</th>
+                  <th scope="col">AIME25</th>
+                  <th scope="col">AMC23</th>
+                  <th scope="col">MATH-500</th>
+                  <th scope="col">Minerva</th>
+                  <th scope="col">Olympiad<wbr>Bench</th>
+                  <th scope="col">BRUMO25</th>
+                  <th scope="col" class="aggregate-col">Macro Avg@k</th>
+                  <th scope="col" class="aggregate-col">Pooled Avg@k</th>
+                </tr>
+              </thead>
+              <tbody aria-labelledby="forward-pair-1" data-paper-table="7">
+                <tr class="model-group"><th colspan="10" scope="rowgroup" id="forward-pair-1"><span class="model-name">Qwen3-1.7B-Base ← Qwen3-8B</span></th></tr>
+                <tr>
+                  <th scope="row" class="method-col">FKL (Uniform)</th>
+                  <td><span class="score-mean">4.6</span> <small class="score-std">± 3.2</small></td>
+                  <td><span class="score-mean">2.1</span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean">25.7</span> <small class="score-std">± 3.7</small></td>
+                  <td><span class="score-mean">56.9</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">19.4</span> <small class="score-std">± 1.9</small></td>
+                  <td><span class="score-mean">22.4</span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean"><strong>9.4</strong></span> <small class="score-std">± 3.1</small></td>
+                  <td class="aggregate-col"><span class="score-mean">20.07</span> <small class="score-std">± 0.94</small></td>
+                  <td class="aggregate-col"><span class="score-mean">31.78</span> <small class="score-std">± 0.83</small></td>
+                </tr>
+                <tr class="fuw-row">
+                  <th scope="row" class="method-col">FKL + Utility (Ours)</th>
+                  <td><span class="score-mean"><strong>12.1</strong></span> <small class="score-std">± 4.5</small></td>
+                  <td><span class="score-mean"><strong>4.4</strong></span> <small class="score-std">± 3.0</small></td>
+                  <td><span class="score-mean"><strong>28.3</strong></span> <small class="score-std">± 4.0</small></td>
+                  <td><span class="score-mean"><strong>63.6</strong></span> <small class="score-std">± 1.8</small></td>
+                  <td><span class="score-mean"><strong>20.4</strong></span> <small class="score-std">± 2.1</small></td>
+                  <td><span class="score-mean"><strong>24.7</strong></span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean">6.0</span> <small class="score-std">± 3.0</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>22.78</strong></span> <small class="score-std">± 1.14</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>35.21</strong></span> <small class="score-std">± 0.89</small></td>
+                </tr>
+              </tbody>
+              <tbody aria-labelledby="forward-pair-2" data-paper-table="7">
+                <tr class="model-group"><th colspan="10" scope="rowgroup" id="forward-pair-2"><span class="model-name">Qwen3-1.7B-Base ← Qwen3-14B</span></th></tr>
+                <tr>
+                  <th scope="row" class="method-col">FKL (Uniform)</th>
+                  <td><span class="score-mean">3.8</span> <small class="score-std">± 1.6</small></td>
+                  <td><span class="score-mean">0.5</span> <small class="score-std">± 0.3</small></td>
+                  <td><span class="score-mean"><strong>29.4</strong></span> <small class="score-std">± 3.8</small></td>
+                  <td><span class="score-mean">57.7</span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean"><strong>20.0</strong></span> <small class="score-std">± 1.9</small></td>
+                  <td><span class="score-mean">22.4</span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean"><strong>9.6</strong></span> <small class="score-std">± 3.9</small></td>
+                  <td class="aggregate-col"><span class="score-mean">20.46</span> <small class="score-std">± 0.91</small></td>
+                  <td class="aggregate-col"><span class="score-mean">32.23</span> <small class="score-std">± 0.84</small></td>
+                </tr>
+                <tr class="fuw-row">
+                  <th scope="row" class="method-col">FKL + Utility (Ours)</th>
+                  <td><span class="score-mean"><strong>6.9</strong></span> <small class="score-std">± 3.7</small></td>
+                  <td><span class="score-mean"><strong>2.7</strong></span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">27.8</span> <small class="score-std">± 3.9</small></td>
+                  <td><span class="score-mean"><strong>63.0</strong></span> <small class="score-std">± 1.7</small></td>
+                  <td><span class="score-mean">19.1</span> <small class="score-std">± 2.0</small></td>
+                  <td><span class="score-mean"><strong>24.0</strong></span> <small class="score-std">± 1.3</small></td>
+                  <td><span class="score-mean">7.3</span> <small class="score-std">± 3.5</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>21.54</strong></span> <small class="score-std">± 1.02</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>34.41</strong></span> <small class="score-std">± 0.86</small></td>
+                </tr>
+              </tbody>
+              <tbody aria-labelledby="forward-pair-3" data-paper-table="7">
+                <tr class="model-group"><th colspan="10" scope="rowgroup" id="forward-pair-3"><span class="model-name">Qwen3-4B-Base ← Qwen3-30B-A3B-Instruct-2507</span></th></tr>
+                <tr>
+                  <th scope="row" class="method-col">FKL (Uniform)</th>
+                  <td><span class="score-mean"><strong>24.0</strong></span> <small class="score-std">± 5.3</small></td>
+                  <td><span class="score-mean">21.0</span> <small class="score-std">± 5.7</small></td>
+                  <td><span class="score-mean"><strong>60.1</strong></span> <small class="score-std">± 5.2</small></td>
+                  <td><span class="score-mean">84.0</span> <small class="score-std">± 1.5</small></td>
+                  <td><span class="score-mean">32.0</span> <small class="score-std">± 2.7</small></td>
+                  <td><span class="score-mean"><strong>48.5</strong></span> <small class="score-std">± 1.8</small></td>
+                  <td><span class="score-mean">24.8</span> <small class="score-std">± 7.4</small></td>
+                  <td class="aggregate-col"><span class="score-mean">42.04</span> <small class="score-std">± 1.7</small></td>
+                  <td class="aggregate-col"><span class="score-mean">55.85</span> <small class="score-std">± 1.2</small></td>
+                </tr>
+                <tr class="fuw-row">
+                  <th scope="row" class="method-col">FKL + Utility (Ours)</th>
+                  <td><span class="score-mean">22.9</span> <small class="score-std">± 5.5</small></td>
+                  <td><span class="score-mean"><strong>22.9</strong></span> <small class="score-std">± 5.9</small></td>
+                  <td><span class="score-mean">57.0</span> <small class="score-std">± 5.1</small></td>
+                  <td><span class="score-mean"><strong>85.5</strong></span> <small class="score-std">± 1.6</small></td>
+                  <td><span class="score-mean"><strong>32.7</strong></span> <small class="score-std">± 2.9</small></td>
+                  <td><span class="score-mean">47.6</span> <small class="score-std">± 1.9</small></td>
+                  <td><span class="score-mean"><strong>33.5</strong></span> <small class="score-std">± 7.2</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>43.2</strong></span> <small class="score-std">± 1.8</small></td>
+                  <td class="aggregate-col"><span class="score-mean"><strong>56.1</strong></span> <small class="score-std">± 1.2</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note" id="forward-table-note">Accuracy (%), mean ± standard error. Bold marks the highest trained point estimate within each pair. Forward-KL utility weighting uses the same model pairs and training setup with its corresponding objective-specific score.</p>
+        </article>
+        <details class="evaluation-details"><summary>Evaluation protocol</summary><div><p>Benchmarks: AIME24 (30 problems), AIME25 (30), AMC23 (83), BRUMO25 (30), MATH-500 (500), Minerva (272), and OlympiadBench (675). Evaluation uses 16 responses per problem on the first four benchmarks and eight on the last three, at temperature 0.7 and top-p 0.95.</p><p>Reported uncertainty uses problem-level bootstrap resampling. The paper reports one training run per configuration. Uniform OPD and FUW share the candidate-set construction and loss implementation within each objective.</p><p>For forward-KL utility, the teacher-to-student log ratio is upper-clipped at 3 when computing the score; the forward-KL loss is unchanged.</p></div></details>
+      </section>
+
+      <section class="agreement-section section wrap" id="agreement" aria-labelledby="agreement-title">
+        <div class="section-heading">
+          <h2 id="agreement-title">When do token-importance criteria agree?</h2>
+          <p>Several independently motivated criteria concentrate on nearly the same high-importance positions at a 50% selection fraction. Their agreement becomes more criterion- and checkpoint-dependent at 20%.</p>
+        </div>
+        <figure class="paper-figure">
+          <img src="assets/criterion-agreement.png" alt="Effective-support agreement with FUW during uniform reverse-KL distillation of Qwen3-1.7B-Base from Qwen3-14B, comparing selection fractions of 20% and 50%." width="2785" height="1052" loading="lazy">
+          <figcaption>Bidirectional weight retention along uniformly weighted OPD checkpoints. At the 50% fraction, gradient magnitude, entropy, KL disagreement, TIP, and TIDE-deficit achieve near-complete retention from step 61 onward; TIDE-excess remains distinct. High retention measures shared effective support, while relative weights can still differ.</figcaption>
+        </figure>
+      </section>
+
+      <section class="citation-section section wrap" id="citation" aria-labelledby="citation-title">
+        <div class="citation-heading"><h2 id="citation-title">BibTeX</h2><button type="button" class="copy-button" id="copy-citation" data-copy-target="#bibtex" aria-live="polite">Copy BibTeX</button></div>
+        <pre class="citation"><code id="bibtex">@misc{sadagopan2026tokenutility,
+  title         = {Token Utility for On-Policy Distillation via Local Trust-Region Optimization},
+  author        = {Narayanan Sadagopan and Yilan Chen and Vijay Lingam},
+  year          = {2026},
+  eprint        = {2610.18883},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2610.18883}
+}</code></pre>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="wrap footer-inner"><p><strong>FUW</strong> · Fisher Utility Weighting</p><div><a href="https://arxiv.org/abs/2610.18883" target="_blank" rel="noopener noreferrer">Paper</a><a href="#top">Back to top ↑</a></div></div></footer>
+  </body>
+</html>

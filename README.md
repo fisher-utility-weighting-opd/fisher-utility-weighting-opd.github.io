@@ -66,11 +66,10 @@ identical weight vectors across criteria.
 
 ## Method scope
 
-The header uses the full paper title. The method explanation follows the flow
-from student responses to local utility, normalized weights, and weighted OPD.
-An explicitly illustrative three-position example shows utilities 1, 4, 9
-becoming square roots 1, 2, 3 and mean-one weights 0.5, 1, 1.5. These numbers
-explain the weighting operation and are separate from the experimental tables.
+The header uses the full paper title. The method explains why disagreement
+alone does not identify local learning opportunities, then defines the
+equal-KL-budget objective and its resulting utility. A four-step flow connects
+student responses to local utility, normalized weights, and weighted OPD.
 Detailed score computation appears in an expandable section.
 
 The local trust-region problem derives an objective-specific utility. Its

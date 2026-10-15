@@ -45,7 +45,25 @@
       <section class="method-section section wrap" id="method" aria-labelledby="method-title">
         <div class="section-heading">
           <h2 id="method-title">How Fisher Utility Weighting works</h2>
-          <p>The student learns from teacher predictions on its own responses. Standard OPD gives every visited position the same weight. FUW gives greater weight to positions with more local opportunity to reduce the distillation loss.</p>
+          <p>The student generates responses, and the teacher supplies next-token supervision at the prefixes the student visits.</p>
+        </div>
+        <h3>Motivation</h3>
+        <p>Uniform OPD gives every visited position the same weight. Some student predictions already match the teacher; other disagreements require larger changes in the student’s predictive distribution to resolve. Disagreement alone does not tell us which positions offer the greatest local opportunity to reduce the distillation loss.</p>
+        <h3>Objective</h3>
+        <p><strong>Which position’s distillation loss can decrease the most under the same small change in the student’s predictive distribution?</strong></p>
+        <p>We compare positions at fixed prefixes using a common infinitesimal KL budget. Under the local Fisher approximation, solving for the largest first-order loss reduction gives the token utility and its corresponding improvement:</p>
+        <div class="equation-line">
+          <span class="equation-label">Token utility</span>
+          <math display="block" aria-label="s sub t equals g sub t transpose F sub t pseudoinverse g sub t"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msubsup><mi>g</mi><mi>t</mi><mo>⊤</mo></msubsup><msubsup><mi>F</mi><mi>t</mi><mo>†</mo></msubsup><msub><mi>g</mi><mi>t</mi></msub></mrow></math>
+          <span class="equation-label">Local improvement</span>
+          <math display="block" aria-label="Delta star sub t equals square root of 2 epsilon s sub t"><mrow><msubsup><mi>Δ</mi><mi>t</mi><mo>⋆</mo></msubsup><mo>=</mo><msqrt><mrow><mn>2</mn><mi>ε</mi><msub><mi>s</mi><mi>t</mi></msub></mrow></msqrt></mrow></math>
+        </div>
+        <p>Here, <span class="inline-math">g<sub>t</sub></span> is the loss gradient with respect to student logits, <span class="inline-math">F<sub>t</sub></span> is the categorical Fisher matrix, and <span class="inline-math">ε</span> is the shared KL budget. Higher utility means greater attainable first-order loss reduction. The chosen distillation loss gives a closed-form score computed directly from the two next-token distributions:</p>
+        <div class="equation-line">
+          <span class="equation-label">Reverse KL</span>
+          <math display="block" aria-label="Utility is the student-weighted variance of the student-to-teacher log probability ratio"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msub><mi mathvariant="normal">Var</mi><msub><mi>p</mi><mi>S</mi></msub></msub><mo>[</mo><mi mathvariant="normal">log</mi><mfrac><msub><mi>p</mi><mi>S</mi></msub><msub><mi>p</mi><mi>T</mi></msub></mfrac><mo>]</mo></mrow></math>
+          <span class="equation-label">Forward KL</span>
+          <math display="block" aria-label="Utility is Pearson chi squared divergence of teacher from student"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msup><mi>χ</mi><mn>2</mn></msup><mo>(</mo><msub><mi>p</mi><mi>T</mi></msub><mo>∥</mo><msub><mi>p</mi><mi>S</mi></msub><mo>)</mo></mrow></math>
         </div>
         <ol class="method-flow" aria-label="FUW training flow">
           <li><strong>Generate responses</strong><p>Collect the prefixes visited by the student and evaluate both models’ next-token distributions.</p></li>
@@ -53,36 +71,6 @@
           <li><strong>Form weights</strong><p>Take square roots of the scores and normalize over the batch so the average weight is one.</p></li>
           <li><strong>Update the student</strong><p>Scale each position’s distillation loss by its weight and update the student with the weighted objective.</p></li>
         </ol>
-        <h3>What does token utility measure?</h3>
-        <p>Allow the same infinitesimal change in the student’s predictive distribution at every position. A higher utility means a larger attainable first-order reduction in distillation loss under that common KL budget.</p>
-        <div class="equation-line">
-          <span class="equation-label">Token utility</span>
-          <math display="block" aria-label="s sub t equals g sub t transpose F sub t pseudoinverse g sub t"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msubsup><mi>g</mi><mi>t</mi><mo>⊤</mo></msubsup><msubsup><mi>F</mi><mi>t</mi><mo>†</mo></msubsup><msub><mi>g</mi><mi>t</mi></msub></mrow></math>
-          <span class="equation-label">Local improvement</span>
-          <math display="block" aria-label="Delta star sub t equals square root of 2 epsilon s sub t"><mrow><msubsup><mi>Δ</mi><mi>t</mi><mo>⋆</mo></msubsup><mo>=</mo><msqrt><mrow><mn>2</mn><mi>ε</mi><msub><mi>s</mi><mi>t</mi></msub></mrow></msqrt></mrow></math>
-        </div>
-        <p>Here, <span class="inline-math">g<sub>t</sub></span> is the loss gradient with respect to student logits and <span class="inline-math">F<sub>t</sub></span> is the categorical Fisher matrix. The square root of the utility follows the local improvement scale. The chosen loss gives a closed-form score that can be computed directly from the two next-token distributions:</p>
-        <div class="equation-line">
-          <span class="equation-label">Reverse KL</span>
-          <math display="block" aria-label="Utility is the student-weighted variance of the student-to-teacher log probability ratio"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msub><mi mathvariant="normal">Var</mi><msub><mi>p</mi><mi>S</mi></msub></msub><mo>[</mo><mi mathvariant="normal">log</mi><mfrac><msub><mi>p</mi><mi>S</mi></msub><msub><mi>p</mi><mi>T</mi></msub></mfrac><mo>]</mo></mrow></math>
-          <span class="equation-label">Forward KL</span>
-          <math display="block" aria-label="Utility is Pearson chi squared divergence of teacher from student"><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><msup><mi>χ</mi><mn>2</mn></msup><mo>(</mo><msub><mi>p</mi><mi>T</mi></msub><mo>∥</mo><msub><mi>p</mi><mi>S</mi></msub><mo>)</mo></mrow></math>
-        </div>
-        <h3>From a score to a training weight</h3>
-        <p>FUW takes the square root of each practical utility score, then divides by the batch mean of those square roots. This gives more influence to positions with greater local learning opportunity.</p>
-        <div class="weight-example" role="group" aria-labelledby="weight-example-title">
-          <h4 id="weight-example-title">An illustrative three-position batch</h4>
-          <table class="example-table">
-            <caption>Illustrative values. The square roots have mean 2; dividing by 2 gives weights with mean one.</caption>
-            <thead><tr><th scope="col">Position</th><th scope="col">Utility</th><th scope="col">Square root</th><th scope="col">Weight</th></tr></thead>
-            <tbody>
-              <tr><th scope="row">1</th><td>1</td><td>1</td><td>0.5×</td></tr>
-              <tr><th scope="row">2</th><td>4</td><td>2</td><td>1.0×</td></tr>
-              <tr><th scope="row">3</th><td>9</td><td>3</td><td>1.5×</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p>The third position receives three times the weight of the first. The weights stay nonnegative and are held fixed while differentiating the weighted loss.</p>
         <details class="implementation-details"><summary>How the scores are computed in training</summary><div><p>For reverse KL, use the union of the student’s and teacher’s top 16 tokens, containing at most 32 tokens. Renormalize both distributions on that set, clip their log ratios to [−5, 5], and compute the student-weighted variance. These approximate scores supply the square-root weights.</p><p>If every score is zero, use uniform weights. Stop gradients through the weights when optimizing the student. Forward KL uses its corresponding Pearson χ<sup>2</sup> utility and upper-clips the teacher-to-student log ratio at 3 for scoring.</p></div></details>
         <p class="theory-note">The trust region defines the local utility; training applies the resulting weights in ordinary OPD updates. The theory compares predictive distributions at fixed prefixes, and the paper evaluates the weighting rule under shared model parameters.</p>
       </section>
